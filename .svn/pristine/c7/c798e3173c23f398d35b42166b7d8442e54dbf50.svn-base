@@ -1,0 +1,26 @@
+
+package com.claim.support;
+
+public class BaseObject {
+
+    public static String serviceCode = "";
+    public static String serviceName = "";
+
+    public  String getServiceCode() {
+        return serviceCode;
+    }
+
+    public  void setServiceCode(String serviceCode) {
+        BaseObject.serviceCode = serviceCode;
+    }
+
+    public  String getServiceName() {
+        return serviceName;
+    }
+
+    public  void setServiceName(String serviceName) {
+        BaseObject.serviceName = serviceName;
+    }
+    
+    
+}

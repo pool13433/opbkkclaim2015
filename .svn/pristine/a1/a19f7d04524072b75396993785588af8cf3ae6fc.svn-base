@@ -1,0 +1,415 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.support;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.CellStyle;
+
+/**
+ *
+ * @author Poolsawat.a
+ */
+public class PoiHssfUtil {
+
+    public static String LEFT = "left";
+    public static String CENTER = "center";
+    public static String RIGHT = "right";
+    //
+    static String FONTS_FAMILY = "Tahoma";
+    //
+    private HSSFWorkbook wb = null;
+    private HSSFDataFormat df;
+    private HSSFFont fH; // fonts header 16
+    private HSSFFont fHB; // fonts header 16 bold
+    private HSSFFont fD; // fonts detail 11
+    private HSSFFont fDB; // fonts detail 11 bold
+    //
+    public HSSFRow row = null;
+    public HSSFCell cell = null;
+    //
+    private HSSFCellStyle csHeaderCenter;
+    private HSSFCellStyle csHeaderLeft;
+    private HSSFCellStyle csHeaderRight;
+    //
+    private HSSFCellStyle csHeaderBCenter;
+    private HSSFCellStyle csHeaderBLeft;
+    private HSSFCellStyle csHeaderBRight;
+    //
+    private HSSFCellStyle csNumCenter;
+    private HSSFCellStyle csNumLeft;
+    private HSSFCellStyle csNumRight;
+    //
+    private HSSFCellStyle csNumBCenter;
+    private HSSFCellStyle csNumBLeft;
+    private HSSFCellStyle csNumBRight;
+    //
+    private HSSFCellStyle csNumDigitCenter;
+    private HSSFCellStyle csNumDigitRight;
+    private HSSFCellStyle csNumDigitLeft;
+    //
+    private HSSFCellStyle csNumDigitBCenter;
+    private HSSFCellStyle csNumDigitBRight;
+    private HSSFCellStyle csNumDigitBLeft;
+    //
+    private HSSFCellStyle csTextCenter;
+    private HSSFCellStyle csTextLeft;
+    private HSSFCellStyle csTextlRight;
+    //    
+    private HSSFCellStyle csTextBCenter;
+    private HSSFCellStyle csTextBLeft;
+    private HSSFCellStyle csTextBRight;
+    //
+    private HSSFCellStyle csTextPid;
+    //
+
+    public PoiHssfUtil(HSSFWorkbook wb, HSSFRow row, HSSFCell cell) {
+        this.wb = wb;
+        this.row = row;
+        this.loadStyle(wb);
+    }
+
+    public HSSFCell setStyleHeader(int indexCol, String value) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        cell.setCellStyle(csHeaderLeft);
+        return cell;
+    }
+
+    public HSSFCell setStyleHeader(int indexCol, String value, String positionValue) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        if (positionValue.toLowerCase().equals(CENTER)) {
+            cell.setCellStyle(csHeaderCenter);
+        } else if (positionValue.toLowerCase().equals(LEFT)) {
+            cell.setCellStyle(csHeaderLeft);
+        } else if (positionValue.toLowerCase().equals(RIGHT)) {
+            cell.setCellStyle(csHeaderRight);
+        }
+        return cell;
+    }
+
+    public HSSFCell setStyleHeaderB(int indexCol, String value) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        cell.setCellStyle(csHeaderBLeft);
+        return cell;
+    }
+
+    public HSSFCell setStyleHeaderB(int indexCol, String value, String positionValue) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        if (positionValue.toLowerCase().equals(CENTER)) {
+            cell.setCellStyle(csHeaderBCenter);
+        } else if (positionValue.toLowerCase().equals(LEFT)) {
+            cell.setCellStyle(csHeaderBLeft);
+        } else if (positionValue.toLowerCase().equals(RIGHT)) {
+            cell.setCellStyle(csHeaderBRight);
+        }
+        return cell;
+    }
+
+    public HSSFCell setStyleText(int indexCol, String value) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        cell.setCellStyle(csTextLeft);
+        return cell;
+    }
+
+    public HSSFCell setStyleText(int indexCol, String value, String positionValue) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        if (positionValue.toLowerCase().equals(CENTER)) {
+            cell.setCellStyle(csTextCenter);
+        } else if (positionValue.toLowerCase().equals(LEFT)) {
+            cell.setCellStyle(csTextLeft);
+        } else if (positionValue.toLowerCase().equals(RIGHT)) {
+            cell.setCellStyle(csTextlRight);
+        }
+        return cell;
+    }
+
+    public HSSFCell setStyleTextBold(int indexCol, String value) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        cell.setCellStyle(csTextBLeft);
+        return cell;
+    }
+
+    public HSSFCell setStyleTextBold(int indexCol, String value, String positionValue) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        if (positionValue.toLowerCase().equals(CENTER)) {
+            cell.setCellStyle(csTextBCenter);
+        } else if (positionValue.toLowerCase().equals(LEFT)) {
+            cell.setCellStyle(csTextBLeft);
+        } else if (positionValue.toLowerCase().equals(RIGHT)) {
+            cell.setCellStyle(csTextBRight);
+        }
+        return cell;
+    }
+
+    public HSSFCell setStyleNumber(int indexCol, String value) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        cell.setCellStyle(csNumLeft);
+        return cell;
+    }
+
+    public HSSFCell setStyleNumber(int indexCol, String value, String positionValue) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        if (positionValue.toLowerCase().equals(CENTER)) {
+            cell.setCellStyle(csNumCenter);
+        } else if (positionValue.toLowerCase().equals(LEFT)) {
+            cell.setCellStyle(csNumLeft);
+        } else if (positionValue.toLowerCase().equals(RIGHT)) {
+            cell.setCellStyle(csNumRight);
+        }
+        return cell;
+    }
+
+    public HSSFCell setStyleNumberDigit(int indexCol, String value) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        cell.setCellStyle(csNumDigitLeft);
+        return cell;
+    }
+
+    public HSSFCell setStyleNumberDigit(int indexCol, String value, String positionValue) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        if (positionValue.toLowerCase().equals(CENTER)) {
+            cell.setCellStyle(csNumDigitCenter);
+        } else if (positionValue.toLowerCase().equals(LEFT)) {
+            cell.setCellStyle(csNumDigitLeft);
+        } else if (positionValue.toLowerCase().equals(RIGHT)) {
+            cell.setCellStyle(csNumDigitRight);
+        }
+        return cell;
+    }
+
+    public HSSFCell setStyleNumberBDigit(int indexCol, String value) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        cell.setCellStyle(csNumDigitBLeft);
+        return cell;
+    }
+
+    public HSSFCell setStyleNumberBDigit(int indexCol, String value, String positionValue) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        if (positionValue.toLowerCase().equals(CENTER)) {
+            cell.setCellStyle(csNumDigitBCenter);
+        } else if (positionValue.toLowerCase().equals(LEFT)) {
+            cell.setCellStyle(csNumDigitBLeft);
+        } else if (positionValue.toLowerCase().equals(RIGHT)) {
+            cell.setCellStyle(csNumDigitBRight);
+        }
+        return cell;
+    }
+
+    public HSSFCell setStyleNumberBold(int indexCol, String value) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        cell.setCellStyle(csNumBLeft);
+        return cell;
+    }
+
+    public HSSFCell setStyleNumberBold(int indexCol, String value, String positionValue) {
+        cell = row.createCell(indexCol);
+        cell.setCellValue(value);
+        if (positionValue.toLowerCase().equals(CENTER)) {
+            cell.setCellStyle(csNumBCenter);
+        } else if (positionValue.toLowerCase().equals(LEFT)) {
+            cell.setCellStyle(csNumBLeft);
+        } else if (positionValue.toLowerCase().equals(RIGHT)) {
+            cell.setCellStyle(csNumBRight);
+        }
+        return cell;
+    }
+
+    private HSSFCellStyle setStyleProperty(HSSFCellStyle cellStyle) {
+        cellStyle = wb.createCellStyle();
+        cellStyle.setFont(fD);
+        cellStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        cellStyle.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        cellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        cellStyle.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        cellStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        cellStyle.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        cellStyle.setWrapText(true);
+        cellStyle.setFillPattern(HSSFCellStyle.FINE_DOTS);
+        cellStyle.setFillForegroundColor(new HSSFColor.LIGHT_TURQUOISE().getIndex());
+        cellStyle.setFillBackgroundColor(HSSFColor.LIGHT_TURQUOISE.index);
+        return cellStyle;
+    }
+
+    private void loadStyle(HSSFWorkbook wbRefer) {
+        // style 
+        this.wb = wbRefer;
+
+        df = wb.createDataFormat();
+
+        fH = wb.createFont();
+        fH.setFontHeightInPoints((short) 16);
+        fH.setFontName(FONTS_FAMILY);
+
+        fHB = wb.createFont();
+        fHB.setFontHeightInPoints((short) 16);
+        fHB.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        fHB.setFontName(FONTS_FAMILY);
+
+        fD = wb.createFont();
+        fD.setFontHeightInPoints((short) 11);
+        fD.setFontName(FONTS_FAMILY);
+
+        fDB = wb.createFont();
+        fDB.setFontHeightInPoints((short) 11);
+        fDB.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        fDB.setFontName(FONTS_FAMILY);
+
+        // header 
+        csHeaderCenter = wb.createCellStyle();
+        csHeaderCenter.setFont(fH);
+        csHeaderCenter.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csHeaderCenter.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csHeaderCenter.setWrapText(true);
+
+        csHeaderRight = wb.createCellStyle();
+        csHeaderRight.setFont(fH);
+        csHeaderRight.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csHeaderRight.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csHeaderRight.setWrapText(true);
+
+        csHeaderLeft = wb.createCellStyle();
+        csHeaderLeft.setFont(fH);
+        csHeaderLeft.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csHeaderLeft.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        csHeaderLeft.setWrapText(true);
+
+        // header bold
+        csHeaderBCenter = wb.createCellStyle();
+        csHeaderBCenter.setFont(fHB);
+        csHeaderBCenter.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csHeaderBCenter.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csHeaderBCenter.setWrapText(true);
+
+        csHeaderBRight = wb.createCellStyle();
+        csHeaderBRight.setFont(fHB);
+        csHeaderBRight.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csHeaderBRight.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csHeaderBRight.setWrapText(true);
+
+        csHeaderBLeft = wb.createCellStyle();
+        csHeaderBLeft.setFont(fHB);
+        csHeaderBLeft.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csHeaderBLeft.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        csHeaderBLeft.setWrapText(true);
+
+        // ###################### detail ######################
+        // *************** text ***************
+        //left       
+        csTextLeft = setStyleProperty(csTextLeft);
+        csTextLeft.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        // center
+        csTextCenter = setStyleProperty(csTextCenter);
+        csTextCenter.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+
+        // right
+        csTextlRight = setStyleProperty(csTextlRight);
+        csTextlRight.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+
+
+        //left  bold
+        csTextBLeft = setStyleProperty(csTextBLeft);
+        csTextBLeft.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        csTextBLeft.setFont(fDB);
+
+        // center bold
+        csTextBCenter = setStyleProperty(csTextBCenter);
+        csTextBCenter.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csTextBCenter.setFont(fDB);
+
+        // right bold
+        csTextBRight = setStyleProperty(csTextBRight);
+        csTextBRight.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csTextBRight.setFont(fDB);
+
+        // *************** number ***************
+        //left       
+        csNumLeft = setStyleProperty(csNumLeft);
+        csNumLeft.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        csNumLeft.setDataFormat(df.getFormat("#,###"));
+        // center
+        csNumCenter = setStyleProperty(csNumCenter);
+        csNumCenter.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csNumCenter.setDataFormat(df.getFormat("#,###"));
+
+        // right
+        csNumRight = setStyleProperty(csNumRight);
+        csNumRight.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNumRight.setDataFormat(df.getFormat("#,###"));
+
+
+        //left  bold
+        csNumBLeft = setStyleProperty(csNumBLeft);
+        csNumBLeft.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        csNumBLeft.setFont(fDB);
+        csNumBLeft.setDataFormat(df.getFormat("#,###"));
+
+        // center bold
+        csNumBCenter = setStyleProperty(csNumBCenter);
+        csNumBCenter.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csNumBCenter.setFont(fDB);
+        csNumBCenter.setDataFormat(df.getFormat("#,###"));
+
+        // right bold
+        csNumBRight = setStyleProperty(csNumBRight);
+        csNumBRight.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNumBRight.setFont(fDB);
+        csNumBRight.setDataFormat(df.getFormat("#,###"));
+
+        // *************** number digit ***************
+        //left       
+        csNumDigitLeft = setStyleProperty(csNumDigitLeft);
+        csNumDigitLeft.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        csNumDigitLeft.setDataFormat(df.getFormat("#,##0.00"));
+        // center
+        csNumDigitCenter = setStyleProperty(csNumDigitCenter);
+        csNumDigitCenter.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csNumDigitCenter.setDataFormat(df.getFormat("#,##0.00"));
+
+        // right
+        csNumDigitRight = setStyleProperty(csNumDigitRight);
+        csNumDigitRight.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNumDigitRight.setDataFormat(df.getFormat("#,##0.00"));
+
+
+        //left  bold
+        csNumDigitBLeft = setStyleProperty(csNumDigitBLeft);
+        csNumDigitBLeft.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        csNumDigitBLeft.setFont(fDB);
+        csNumDigitBLeft.setDataFormat(df.getFormat("#,##0.00"));
+
+        // center bold
+        csNumDigitBCenter = setStyleProperty(csNumDigitBCenter);
+        csNumDigitBCenter.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csNumDigitBCenter.setFont(fDB);
+        csNumDigitBCenter.setDataFormat(df.getFormat("#,##0.00"));
+
+        // right bold
+        csNumDigitBRight = setStyleProperty(csNumDigitBRight);
+        csNumDigitBRight.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNumDigitBRight.setFont(fDB);
+        csNumDigitBRight.setDataFormat(df.getFormat("#,##0.00"));
+
+    }
+}

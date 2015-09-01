@@ -1,0 +1,23 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.dao;
+
+import com.claim.object.OppReport;
+import java.sql.Connection;
+import java.util.List;
+
+/**
+ *
+ * @author Poolsawat.a
+ */
+public interface IDao<entiry> {
+    public void SetConnection(Connection connn);    
+    public List<entiry> ReadListDetail(OppReport params);
+    public List<entiry> ReadListSum(OppReport params);
+    public List<entiry> ReadList(OppReport params);
+    public entiry Read(OppReport params);
+    public void CloseConnection();
+}

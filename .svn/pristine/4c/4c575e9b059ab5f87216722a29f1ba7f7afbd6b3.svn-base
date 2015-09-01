@@ -1,0 +1,250 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.support;
+
+import com.claim.connection.DBManage;
+import com.claim.dao.CreateDataStoreDAO;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+/**
+ *
+ * @author Poolsawat.a
+ */
+public class DateUtil {
+
+    public int yearADToBC(int yearAD) {
+        return yearAD + 543;
+    }
+
+    public static String getBudgeMonthYear_543(String stmp, int finalBudgetMonth) {
+        if (stmp.length() >= 6) {//ex. 201412-1
+            String YYYY = stmp.substring(0, 4);
+            String MM = stmp.substring(4, 6);
+            String ROUND = stmp.substring(7, 8);
+            String YYYYMM = YYYY + MM;
+            if (new DateUtil().CheckDateOpdCurrentBudgetYear(YYYYMM, finalBudgetMonth)) {
+                System.out.println("step 1");
+                if (Integer.parseInt(ROUND) == 0) { // แสดงว่างวดปลายปี
+                    System.out.println("step 2");
+                    return String.valueOf(Integer.parseInt(YYYY) + 543); // example : 2014+544 = 2557 เพราะปลายปี
+                } else {
+                    System.out.println("step 3");
+                    if (Integer.parseInt(MM) <= finalBudgetMonth) {
+                        return String.valueOf(Integer.parseInt(YYYY) + 543); // example : 2014+543 = 2557
+                    } else {
+                        return String.valueOf(Integer.parseInt(YYYY) + 544); // example : 2014+544 = 2558
+                    }
+                }
+            } else {
+                System.out.println("step 4");
+                if (Integer.parseInt(MM) <= finalBudgetMonth) {
+                    return String.valueOf(Integer.parseInt(YYYY) + 543); // example : 2014+543 = 2557
+                } else {
+                    return String.valueOf(Integer.parseInt(YYYY) + 544); // example : 2014+544 = 2558
+                }
+            }
+        } else {
+            return "";
+        }
+    }
+
+    public boolean CheckDateOpdCurrentBudgetYear(String dateopdEnd, int minMouth) {
+        boolean is = false;
+        String day = "";
+        try {
+            //int current_year = Calendar.getInstance().get(Calendar.YEAR);            
+            int current_year = Integer.parseInt(this.getCurrentYearFromServer());
+            System.out.println("Current Year ::==" + String.valueOf(current_year));
+            //20131001
+            System.out.println("getOpd_date_stop : " + dateopdEnd);
+            String year = dateopdEnd.substring(0, 4);
+            String month = dateopdEnd.substring(4, 6);
+            if (dateopdEnd.length() > 6) {
+                day = dateopdEnd.substring(6, 8);
+            }
+
+            System.out.println("year : " + year);
+            System.out.println("month : " + month);
+            System.out.println("day : " + day);
+            if (Integer.parseInt(year) >= current_year) { // 2015 ขึ้นไป
+                System.out.println("Integer.parseInt(year) > 2014 ");
+                if (Integer.parseInt(month) < minMouth) { // เดือน 10 ขึ้นไป
+                    System.out.println("Integer.parseInt(month) > 9");
+                    is = true;
+                } else {
+                    is = false;
+                }
+            } else if (Integer.parseInt(year) < current_year) {
+                if (Integer.parseInt(month) > minMouth) { // เดือน 10 ขึ้นไป
+                    System.out.println("Integer.parseInt(month) > 9");
+                    is = true;
+                } else {
+                    is = false;
+                }
+            } else {
+                is = false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("isCheck : " + is);
+        return is;
+    }
+
+    public boolean CheckStmpBudgetYear2015(String stmp, int maxMonthBudget) {
+        boolean is = false;
+        if (stmp.length() >= 6) { // 201410-1
+            String year = stmp.substring(0, 4); // 2014
+            String month = stmp.substring(4, 6); // 10
+            String space = stmp.substring(6, 7); // - 
+            String round = stmp.substring(7, 8);  // 1
+            int current_year = Integer.parseInt(this.getCurrentYearFromServer());
+            if ((current_year == Integer.parseInt(year) && Integer.parseInt(month) <= maxMonthBudget)
+                    || (Integer.parseInt(year) == (current_year - 1) && Integer.parseInt(month) > maxMonthBudget)) {
+                is = true;
+            } else if ((current_year == Integer.parseInt(year) && Integer.parseInt(month) > maxMonthBudget)
+                    || (Integer.parseInt(year) == (current_year - 1) && Integer.parseInt(month) <= maxMonthBudget)) {
+                is = false;
+            }
+        } else {
+            return is;
+        }
+        return is;
+    }
+
+    public String convertStmpToString(String stmp) {
+        // stmp 201501-1
+        BaseFunction function = new BaseFunction();
+        if (stmp.length() >= 8) {
+            String year = stmp.substring(0, 4);
+            String month = stmp.substring(4, 6);
+            String no = stmp.substring(7, 8);
+            //System.out.println("month : " + month);
+            //System.out.println("year_2 : " + year);
+            int year_2 = 0;
+            year_2 = Integer.parseInt(stmp.substring(2, 4)) + 543;
+            //System.out.println("year_2 : " + year_2);
+
+            String result = function.INDEX_AUTO[(Integer.parseInt(no) + 2)]; // '-','1','2',...
+            result += " ( " + function.MMONTH_SHORT[Integer.parseInt(month)] + " ";
+            result += String.valueOf(year_2).substring(1, 3);
+            result += " ) ";
+            System.out.println("result : " + result);
+            return result;
+        } else {
+            return "";
+        }
+    }
+
+    public String convertStmpToNoniString(String stmp) {
+        // stmp 201501-1
+        BaseFunction function = new BaseFunction();
+        String result = "";
+        if (stmp.length() >= 8) {
+            String year = stmp.substring(0, 4);
+            String month = stmp.substring(4, 6);
+            String no = stmp.substring(7, 8);
+            //System.out.println("month : " + month);
+            //System.out.println("year_2 : " + year);
+            int year_2 = 0;
+            year_2 = Integer.parseInt(stmp.substring(2, 4)) + 543;
+            //System.out.println("year_2 : " + year_2);
+            int year_sub2 = Integer.parseInt(String.valueOf(year_2).substring(1, 3));
+            if (year_sub2 > 57) {
+                result = "NONI" + String.valueOf(year_2).substring(1, 3) + "-" + month;
+            } else {
+                result = "NONI57-01";
+            }
+            System.out.println("result : " + result);
+            return result;
+        } else {
+            return "";
+        }
+    }
+
+    public String getDateTimeCurrent() {
+        Date today = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); //dd/mm/yyyy hh24:mi:ss
+        String formattedDate = sdf.format(today);
+        System.out.println(formattedDate); // 12/01/2011 4:48:16 PM
+        return formattedDate;
+    }
+
+    public String getDateTimeForward(int day) {
+        Date today = new Date();
+        Date tomorrow = new Date(today.getTime() + (day * 1000 * 60 * 60 * 24));
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); //dd/mm/yyyy hh24:mi:ss
+        String formattedDate = sdf.format(tomorrow);
+        System.out.println(formattedDate); // 12/01/2011 4:48:16 PM
+        return formattedDate;
+    }
+
+    public String getCurrentYearFromServer() {
+        StringBuilder sql = null;
+        ResultSet rs = null;
+        PreparedStatement pstm = null;
+        Connection conn = null;
+        try {
+            conn = new DBManage().open();
+            sql = new StringBuilder();
+            sql.append(" SELECT to_char(sysdate,'yyyy') current_year from dual ");
+            pstm = conn.prepareStatement(sql.toString());
+            rs = pstm.executeQuery();
+            if (rs.next()) {
+                return rs.getString("current_year");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstm != null) {
+                    pstm.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
+    }
+    public String convertFormatData(Date dateConvert) {
+        try {
+            SimpleDateFormat formatter5 = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+            String formats1 = formatter5.format(dateConvert);
+            System.out.println(formats1);
+
+            return formats1;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static void main(String[] args) {
+        //new DateUtil().getDateTimeForward(1);
+        System.out.println("new DateUtil().getCurrentYearFromServer() ::=="+new DateUtil().getCurrentYearFromServer());
+        //System.out.println("DATE : " + new DateUtil().CheckDateOpdBudgetYear2015("201408", 7));
+        //new DateUtil().convertStmpToString("201501-1");
+        //new DateUtil().convertStmpToNoniString("201501-1");
+        //new DateUtil().CheckDateOpdBudgetYear2015("201501-4", 9);
+        //new DateUtil().CheckDateOpdBudgetYear2015("20150228", 9);
+        //System.out.println("Busget_year ::==" + DateUtil.getBudgeMonthYear_543("201509-1", 9));
+//        System.out.println("CheckStmpBudgetYear2015 1::==" + new DateUtil().CheckStmpBudgetYear2015("201409-1", 9));
+//        System.out.println("CheckStmpBudgetYear2015 2::==" + new DateUtil().CheckStmpBudgetYear2015("201410-1", 9));
+//        System.out.println("CheckStmpBudgetYear2015 3::==" + new DateUtil().CheckStmpBudgetYear2015("201501-1", 9));
+//        System.out.println("CheckStmpBudgetYear2015 4::==" + new DateUtil().CheckStmpBudgetYear2015("201510-1", 9));
+//        System.out.println("CheckStmpBudgetYear2015 5::==" + new DateUtil().CheckStmpBudgetYear2015("201601-1", 9));
+    }
+}

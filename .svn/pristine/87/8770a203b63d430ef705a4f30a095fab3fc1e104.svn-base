@@ -1,0 +1,76 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+import com.claim.dao.PaymentStatusDao;
+import com.claim.object.Objpayment_result;
+import com.claim.object.Objpayment_status;
+import com.claim.support.Console;
+import com.claim.support.ProgrameStatus;
+
+/**
+ *
+ * @author poon__000
+ */
+public class PaymentStatusController {
+
+    public ProgrameStatus startRunStore(Objpayment_status objpaysta) {
+        PaymentStatusDao statusDao = new PaymentStatusDao();
+        statusDao.openConnection();
+        ProgrameStatus status = statusDao.callOracleStoredProc(objpaysta);
+        statusDao.closeConnection();
+        return status;
+    }
+
+    public List<Objpayment_result> getListPaymentResult(Objpayment_status objpaysta) {
+        List<Objpayment_result> listPayRe = null;
+        try {
+            PaymentStatusDao statusDao = new PaymentStatusDao();
+            statusDao.openConnection();
+            System.out.println("objpaysta.getPayment_status() :: =="+objpaysta.getPayment_status());
+            //"-", "OPTYPE 6[ClearingHouse]", "OPAE 74", "OPTYPE 5[OP บัตรตัวเอง]", "Individual", "Refer/AE"
+            switch (objpaysta.getPayment_type()) {
+                case 0:
+
+                    break;
+                case 1:
+                    listPayRe = statusDao.getPaymentResult_clearinghouse(objpaysta.getStmp(),objpaysta.getPayment_status());
+                    break;
+                case 2:
+                    listPayRe = statusDao.getPaymentResult_ae74(objpaysta.getStmp(),objpaysta.getPayment_status());
+                    break;
+                case 3:
+                    listPayRe = statusDao.getPaymentResult_type5_197(objpaysta.getStmp(),objpaysta.getPayment_status());
+                    break;
+                case 4:
+                    listPayRe = statusDao.getPaymentResult_type5_HightCost(objpaysta.getStmp(),objpaysta.getPayment_status());
+                    break;
+                case 5:                    
+                    listPayRe = statusDao.getPaymentResult_individual(objpaysta.getStmp(),objpaysta.getPayment_status());
+                    break;
+                case 6:
+                    listPayRe = statusDao.getPaymentResult_refer(objpaysta.getStmp(),objpaysta.getPayment_status());
+                    break;
+                case 7: // chula ว่างไว้ก่อน
+                    listPayRe = statusDao.getPaymentResult_refer(objpaysta.getStmp(),objpaysta.getPayment_status());
+                    listPayRe = new ArrayList<Objpayment_result>();
+                case 8: //noni
+                    listPayRe = statusDao.getPaymentResult_noni(objpaysta.getStmp(),objpaysta.getPayment_status());
+                    break;
+                default:
+                    listPayRe = new ArrayList<Objpayment_result>();
+                    Console.LOG("ไม่พบงวดที่จะดูข้อมูล", 1);
+                    break;
+            }
+            statusDao.closeConnection();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return listPayRe;
+    }
+}

@@ -1,0 +1,274 @@
+
+package com.claim.object;
+
+import java.util.Date;
+
+public class RptOpBkkOpaeType4 {
+
+    private String tXID;
+    private String fNAME;
+    private String lNAME;
+    private String PID;
+    private String HN;
+    private String dATEOPD;
+    private String hMAINOP_N;
+    private String hCODE;
+    private String hNAME;
+    private String hMAINOP_NAME;
+    private String iTEM_CODE;
+    private Integer qTY;
+    private Double sTDPRICE;
+    private Double pRICE_TOTAL;
+    private Double tOTALREIMBURSE;
+    private Double rEIMBURSE;
+    private Double uNITPRICE;
+    private Double rFCAR_CHARGE;
+    private Double OTHPRICE;
+    private Double rFCAR_REIMBURSE;
+    private String cASE_NAME;
+    private String sTMP;
+    private Double pOINT_RATE;
+    private String iTEM_DESCR;
+    private String iTEM_DESCR_N;
+    private Double AMOUNT;
+    private String PROVINCE_ID;
+    private String TYPE_DESCR;
+    private String TYPE_OP;
+
+    public String getPROVINCE_ID() {
+        return PROVINCE_ID;
+    }
+
+    public void setPROVINCE_ID(String PROVINCE_ID) {
+        this.PROVINCE_ID = PROVINCE_ID;
+    }
+
+    public String getTYPE_DESCR() {
+        return TYPE_DESCR;
+    }
+
+    public void setTYPE_DESCR(String TYPE_DESCR) {
+        this.TYPE_DESCR = TYPE_DESCR;
+    }
+
+    public String getTYPE_OP() {
+        return TYPE_OP;
+    }
+
+    public void setTYPE_OP(String TYPE_OP) {
+        this.TYPE_OP = TYPE_OP;
+    }
+            
+    public Double getAMOUNT() {
+        return AMOUNT;
+    }
+
+    public void setAMOUNT(Double AMOUNT) {
+        this.AMOUNT = AMOUNT;
+    }
+    
+    public String gettXID() {
+        return tXID;
+    }
+
+    public void settXID(String tXID) {
+        this.tXID = tXID;
+    }
+
+    public String getfNAME() {
+        return fNAME;
+    }
+
+    public void setfNAME(String fNAME) {
+        this.fNAME = fNAME;
+    }
+
+    public String getlNAME() {
+        return lNAME;
+    }
+
+    public void setlNAME(String lNAME) {
+        this.lNAME = lNAME;
+    }
+
+    public String getPID() {
+        return PID;
+    }
+
+    public void setPID(String PID) {
+        this.PID = PID;
+    }
+
+    public String getHN() {
+        return HN;
+    }
+
+    public void setHN(String HN) {
+        this.HN = HN;
+    }
+
+    public String getdATEOPD() {
+        return dATEOPD;
+    }
+
+    public void setdATEOPD(String dATEOPD) {
+        this.dATEOPD = dATEOPD;
+    }
+
+
+    public String gethMAINOP_N() {
+        return hMAINOP_N;
+    }
+
+    public void sethMAINOP_N(String hMAINOP_N) {
+        this.hMAINOP_N = hMAINOP_N;
+    }
+
+    public String gethCODE() {
+        return hCODE;
+    }
+
+    public void sethCODE(String hCODE) {
+        this.hCODE = hCODE;
+    }
+
+    public String gethNAME() {
+        return hNAME;
+    }
+
+    public void sethNAME(String hNAME) {
+        this.hNAME = hNAME;
+    }
+
+    public String gethMAINOP_NAME() {
+        return hMAINOP_NAME;
+    }
+
+    public void sethMAINOP_NAME(String hMAINOP_NAME) {
+        this.hMAINOP_NAME = hMAINOP_NAME;
+    }
+
+    public String getiTEM_CODE() {
+        return iTEM_CODE;
+    }
+
+    public void setiTEM_CODE(String iTEM_CODE) {
+        this.iTEM_CODE = iTEM_CODE;
+    }
+
+    public Integer getqTY() {
+        return qTY;
+    }
+
+    public void setqTY(Integer qTY) {
+        this.qTY = qTY;
+    }
+
+    public Double getsTDPRICE() {
+        return sTDPRICE;
+    }
+
+    public void setsTDPRICE(Double sTDPRICE) {
+        this.sTDPRICE = sTDPRICE;
+    }
+
+    public Double getpRICE_TOTAL() {
+        return pRICE_TOTAL;
+    }
+
+    public void setpRICE_TOTAL(Double pRICE_TOTAL) {
+        this.pRICE_TOTAL = pRICE_TOTAL;
+    }
+
+    public Double gettOTALREIMBURSE() {
+        return tOTALREIMBURSE;
+    }
+
+    public void settOTALREIMBURSE(Double tOTALREIMBURSE) {
+        this.tOTALREIMBURSE = tOTALREIMBURSE;
+    }
+
+    public Double getrEIMBURSE() {
+        return rEIMBURSE;
+    }
+
+    public void setrEIMBURSE(Double rEIMBURSE) {
+        this.rEIMBURSE = rEIMBURSE;
+    }
+
+    public Double getuNITPRICE() {
+        return uNITPRICE;
+    }
+
+    public void setuNITPRICE(Double uNITPRICE) {
+        this.uNITPRICE = uNITPRICE;
+    }
+
+    public Double getrFCAR_CHARGE() {
+        return rFCAR_CHARGE;
+    }
+
+    public void setrFCAR_CHARGE(Double rFCAR_CHARGE) {
+        this.rFCAR_CHARGE = rFCAR_CHARGE;
+    }
+
+    public Double getOTHPRICE() {
+        return OTHPRICE;
+    }
+
+    public void setOTHPRICE(Double OTHPRICE) {
+        this.OTHPRICE = OTHPRICE;
+    }
+
+    public Double getrFCAR_REIMBURSE() {
+        return rFCAR_REIMBURSE;
+    }
+
+    public void setrFCAR_REIMBURSE(Double rFCAR_REIMBURSE) {
+        this.rFCAR_REIMBURSE = rFCAR_REIMBURSE;
+    }
+
+    public String getcASE_NAME() {
+        return cASE_NAME;
+    }
+
+    public void setcASE_NAME(String cASE_NAME) {
+        this.cASE_NAME = cASE_NAME;
+    }
+
+    public String getsTMP() {
+        return sTMP;
+    }
+
+    public void setsTMP(String sTMP) {
+        this.sTMP = sTMP;
+    }
+
+    public Double getpOINT_RATE() {
+        return pOINT_RATE;
+    }
+
+    public void setpOINT_RATE(Double pOINT_RATE) {
+        this.pOINT_RATE = pOINT_RATE;
+    }
+
+    public String getiTEM_DESCR() {
+        return iTEM_DESCR;
+    }
+
+    public void setiTEM_DESCR(String iTEM_DESCR) {
+        this.iTEM_DESCR = iTEM_DESCR;
+    }
+
+    public String getiTEM_DESCR_N() {
+        return iTEM_DESCR_N;
+    }
+
+    public void setiTEM_DESCR_N(String iTEM_DESCR_N) {
+        this.iTEM_DESCR_N = iTEM_DESCR_N;
+    }
+
+    
+    
+    
+}

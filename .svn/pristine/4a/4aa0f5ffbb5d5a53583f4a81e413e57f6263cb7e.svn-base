@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JInternalFrameFormInfo">
+  <Properties>
+    <Property name="closable" type="boolean" value="true"/>
+    <Property name="iconifiable" type="boolean" value="true"/>
+    <Property name="maximizable" type="boolean" value="true"/>
+    <Property name="resizable" type="boolean" value="true"/>
+    <Property name="title" type="java.lang.String" value="&#xe2b;&#xe19;&#xe49;&#xe32;&#xe08;&#xe2d;&#xe02;&#xe49;&#xe2d;&#xe21;&#xe39;&#xe25;&#xe01;&#xe32;&#xe23;&#xe43;&#xe0a;&#xe49;&#xe07;&#xe32;&#xe19;&#xe42;&#xe1b;&#xe23;&#xe41;&#xe01;&#xe23;&#xe21; OPBKKCLAIM 2015"/>
+    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+      <Font name="TH SarabunPSK" size="24" style="1"/>
+    </Property>
+    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+      <Dimension value="[1200, 550]"/>
+    </Property>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jPanel1" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jPanel1" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Container class="javax.swing.JPanel" name="jPanel1">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+            <TitledBorder title="&#xe02;&#xe49;&#xe2d;&#xe21;&#xe39;&#xe25;&#xe01;&#xe32;&#xe23;&#xe40;&#xe02;&#xe49;&#xe32;&#xe43;&#xe0a;&#xe49;&#xe07;&#xe32;&#xe19;&#xe42;&#xe1b;&#xe23;&#xe41;&#xe01;&#xe23;&#xe21;&#xe17;&#xe31;&#xe49;&#xe07;&#xe2b;&#xe21;&#xe14; &#xe42;&#xe14;&#xe22;&#xe40;&#xe23;&#xe35;&#xe22;&#xe07;&#xe08;&#xe32;&#xe01; &#xe13; &#xe27;&#xe31;&#xe19;&#xe17;&#xe35;&#xe48;&#xe1b;&#xe31;&#xe08;&#xe08;&#xe38;&#xe1a;&#xe31;&#xe19; - &#xe2d;&#xe14;&#xe35;&#xe15;">
+              <Font PropertyName="font" name="TH SarabunPSK" size="24" style="1"/>
+            </TitledBorder>
+          </Border>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" pref="932" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="jScrollPane1" pref="450" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+          <Properties>
+            <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
+            <Property name="verticalScrollBarPolicy" type="int" value="22"/>
+          </Properties>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JTable" name="tableLog">
+              <Properties>
+                <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="TH SarabunPSK" size="24" style="1"/>
+                </Property>
+                <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                  <Table columnCount="5" rowCount="0">
+                    <Column editable="true" title="&#xe0a;&#xe37;&#xe48;&#xe2d;&#xe01;&#xe32;&#xe23;&#xe17;&#xe33;&#xe07;&#xe32;&#xe19;" type="java.lang.Object"/>
+                    <Column editable="true" title="&#xe2d;&#xe18;&#xe34;&#xe1a;&#xe32;&#xe22;" type="java.lang.Object"/>
+                    <Column editable="true" title="ip &#xe40;&#xe04;&#xe23;&#xe37;&#xe48;&#xe2d;&#xe07;&#xe43;&#xe0a;&#xe49;&#xe07;&#xe32;&#xe19;" type="java.lang.Object"/>
+                    <Column editable="true" title="&#xe27;&#xe31;&#xe19;&#xe17;&#xe35;&#xe48;&#xe40;&#xe02;&#xe49;&#xe32;&#xe43;&#xe0a;&#xe49;&#xe07;&#xe32;&#xe19;" type="java.lang.Object"/>
+                    <Column editable="true" title="&#xe2a;&#xe16;&#xe32;&#xe19;&#xe30;&#xe01;&#xe32;&#xe23;&#xe40;&#xe02;&#xe49;&#xe32;&#xe43;&#xe0a;&#xe49;&#xe07;&#xe32;&#xe19;" type="java.lang.Object"/>
+                  </Table>
+                </Property>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+      </SubComponents>
+    </Container>
+  </SubComponents>
+</Form>

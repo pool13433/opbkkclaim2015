@@ -1,0 +1,136 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.object;
+
+import com.claim.support.StringOpUtil;
+
+/**
+ *
+ * @author poon__000
+ */
+public class HospitalService {
+        private Integer hosId;
+        private String hosCode;
+        private String hosName;
+        private String hosHmainCode;
+        private String hosHmainName;
+        private String stmp;
+        private String remark;
+        private String dateopd;
+        private String dateopd_begin;
+        private String dateopd_end;
+        private String dateopd_th;
+        
+
+    public HospitalService() {
+    }
+
+    public HospitalService(String hosCode, String hosName) {
+        this.hosCode = hosCode;
+        this.hosName = hosName;
+    }
+        
+    public HospitalService(Integer hosId, String hosCode, String hosName) {
+        this.hosId = hosId;
+        this.hosCode = hosCode;
+        this.hosName = hosName;
+    }
+
+    public String getHosHmainCode() {
+        return StringOpUtil.removeNull(hosHmainCode);
+    }
+
+    public void setHosHmainCode(String hosHmainCode) {
+        this.hosHmainCode = hosHmainCode;
+    }
+
+    public String getHosHmainName() {
+        return StringOpUtil.removeNull(hosHmainName);
+    }
+
+    public void setHosHmainName(String hosHmainName) {
+        this.hosHmainName = hosHmainName;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+        
+
+    public String getStmp() {
+        return stmp;
+    }
+
+    public void setStmp(String stmp) {
+        this.stmp = stmp;
+    }
+        
+
+    public Integer getHosId() {
+        return hosId;
+    }
+
+    public void setHosId(Integer hosId) {
+        this.hosId = hosId;
+    }
+
+    public String getHosCode() {
+        return StringOpUtil.removeNull(hosCode);
+    }
+
+    public void setHosCode(String hosCode) {
+        this.hosCode = hosCode;
+    }  
+
+    public String getHosName() {
+        return hosName;
+    }
+
+    public void setHosName(String hosName) {
+        this.hosName = hosName;
+    }
+
+    public String getDateopd() {
+        return StringOpUtil.removeNull(dateopd);
+    }
+
+    public void setDateopd(String dateopd) {
+        this.dateopd = dateopd;
+    }
+
+    public String getDateopd_th() {
+        return StringOpUtil.removeNull(dateopd_th);
+    }
+
+    public void setDateopd_th(String dateopd_th) {
+        this.dateopd_th = dateopd_th;
+    }
+
+    public String getDateopd_begin() {
+        return StringOpUtil.removeNull(dateopd_begin);
+    }
+
+    public void setDateopd_begin(String dateopd_begin) {
+        this.dateopd_begin = dateopd_begin;
+    }
+
+    public String getDateopd_end() {
+        return StringOpUtil.removeNull(dateopd_end);
+    }
+
+    public void setDateopd_end(String dateopd_end) {
+        this.dateopd_end = dateopd_end;
+    }
+    
+    @Override
+    public String toString() {
+        return "HospitalService{" + "hosId=" + hosId + ", hosCode=" + hosCode + ", hosName=" + hosName + ", hosHmainCode=" + hosHmainCode + ", hosHmainName=" + hosHmainName + ", stmp=" + stmp + ", remark=" + remark + ", dateopd=" + dateopd + ", dateopd_th=" + dateopd_th + '}';
+    }
+    
+}

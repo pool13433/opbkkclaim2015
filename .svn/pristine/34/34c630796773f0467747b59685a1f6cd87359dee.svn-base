@@ -1,0 +1,486 @@
+package com.claim.controller;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.sql.ResultSet;
+import java.util.List;
+import com.claim.dao.OpType5DAO;
+import com.claim.support.BaseFunction;
+import com.claim.object.HospitalService;
+import com.claim.object.Obj_type5_detail;
+import com.claim.object.Obj_type5_sum;
+import com.claim.object.OppReport;
+import com.claim.support.Console;
+import com.claim.support.Constants;
+import com.claim.support.DateUtil;
+import com.claim.support.ProgrameStatus;
+import com.claim.support.StringOpUtil;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+
+public class OpType5Controller extends ExcellBaseUtil {
+
+    private BaseFunction function;
+    private OpType5DAO type5DAO;
+
+    public OpType5Controller() {
+        function = new BaseFunction();
+        type5DAO = new OpType5DAO();
+    }
+    // ############################ for weeb site ###############
+    public ProgrameStatus type5_detail(OppReport report) {
+        FileOutputStream out = null;
+        FileInputStream file = null;
+        ProgrameStatus programeStatus = new ProgrameStatus();
+        String stmp = StringOpUtil.removeNull(report.getYearMonth()) + "-" + report.getNo();
+        String pathDirectory = report.getPathFile() + "\\type5\\" + stmp;
+        try {
+
+            List<HospitalService> listHospital = type5DAO.getHospitalService(report);
+
+            System.out.println("Hospital_size==" + listHospital.size());
+
+            if (!listHospital.isEmpty()) {
+                for (int j = 0; j < listHospital.size(); j++) {
+                    HospitalService objHospital = listHospital.get(j);
+
+                    if (report.getWeb_type5()) { // for web site claim
+                        file = new FileInputStream(new File(".\\xls\\TYPE5_detail_3.xls"));
+                        new BaseFunction().createMutiDirectory(new File(pathDirectory));
+                        out = new FileOutputStream(pathDirectory+"\\ophc_" + objHospital.getHosCode() + "_" + stmp + ".xls");
+                    } else { // for genaral use
+                        if (report.getAttribute() == '1') {  // 197
+                            file = new FileInputStream(new File(".\\xls\\TYPE5_detail_1.xls"));
+                            out = new FileOutputStream(report.getPathFile() + "\\type5_detail_197_" + report.getYearMonth() + "-" + report.getNo() + "_" + objHospital.getHosHmainCode() + ".xls");
+                        } else if (report.getAttribute() == '3') {  //hc
+                            file = new FileInputStream(new File(".\\xls\\TYPE5_detail_3.xls"));
+                            out = new FileOutputStream(report.getPathFile() + "\\type5_detail_hc_" + report.getYearMonth() + "-" + report.getNo() + "_" + objHospital.getHosCode() + ".xls");
+                        }
+                    }
+
+                    HSSFWorkbook wbType5 = new HSSFWorkbook(file);
+                    this.loadStyle(wbType5);
+
+                    String EXCELL_HEADER = "";
+                    String EXCELL_SERVICE = "";
+
+                    if (report.getAttribute() == '1') {
+                        EXCELL_HEADER = "รายละเอียด การจ่ายชดเชยค่าบริการผู้ป่วยนอก  กรณีตรวจวินิจฉัยพิเศษ197รายการ   ปีงบประมาณ " + DateUtil.getBudgeMonthYear_543(report.getBudget_stmp(), 9);;
+                        EXCELL_SERVICE = "หน่วยบริการประจำ: " + objHospital.getHosHmainName() + " (" + objHospital.getHosHmainCode() + ")";
+                    } else {
+                        EXCELL_HEADER = "รายละเอียด  การจ่ายชดเชยค่าบริการผู้ป่วยนอก  กรณีค่าใช้จ่ายสูง(OPHC)  ปีงบประมาณ " + DateUtil.getBudgeMonthYear_543(report.getBudget_stmp(), 9);
+                        EXCELL_SERVICE = "หน่วยบริการประจำ: " + objHospital.getHosName() + " (" + objHospital.getHosCode() + ")";
+                    }
+
+                    String EXCELL_MONTH = report.getTitle1();
+
+                    HSSFSheet sheet = wb.getSheetAt(0);
+                    sheet.createFreezePane(4, 5);
+
+                    // set columns width 
+                    sheet.setColumnWidth(11, WIDTH_TXID);
+
+                    HSSFCell cell = null;
+                    HSSFRow row = null;
+
+                    // row 0
+                    row = sheet.createRow(0);
+                    row.setHeight((short) 390);
+                    cell = row.createCell(0);
+                    cell.setCellValue(EXCELL_HEADER);
+                    sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 9));
+                    cell.setCellStyle(csHead);
+
+                    // row 1
+                    row = sheet.createRow(1);
+                    row.setHeight((short) 390);
+                    cell = row.createCell(0);
+                    cell.setCellValue(EXCELL_MONTH);
+                    sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 9));
+                    cell.setCellStyle(csHead);
+
+                    // row 2
+                    row = sheet.createRow(2);
+                    row.setHeight((short) 390);
+                    cell = row.createCell(0);
+                    cell.setCellValue(EXCELL_SERVICE);
+                    sheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 9));
+                    cell.setCellStyle(csHead);
+
+                    //row 4 ตัวเนื้อหา
+                    int curRow = 5;
+                    int i = 1;
+                    ResultSet rs = null;
+
+                    // ############## แก้ไข 2014-09-05 ####################
+                    if (report.getAttribute() == '1') {
+                        // แสดง hcode หน้า รายงาน where hmain
+                        report.setServiceCode(objHospital.getHosHmainCode().toString());
+                    } else if (report.getAttribute() == '3') {
+                        // แสดง hmain หน้า รายงาน where hcode
+                        report.setServiceCode(objHospital.getHosCode().toString());
+                    }
+
+                    List<Obj_type5_detail> list_type5 = type5DAO.genReportType5_detail(report);
+
+                    for (int k = 0; k < list_type5.size(); k++) {
+                        Obj_type5_detail obj_type = list_type5.get(k);
+
+                        row = sheet.createRow(curRow);
+                        row.setHeight((short) 360);
+                        cell = row.createCell(0);
+                        cell.setCellValue(i);
+                        cell.setCellStyle(csNum4);
+
+                        cell = row.createCell(1);
+                        cell.setCellValue(function.subStringPid(obj_type.getPid()));
+                        cell.setCellStyle(csDetailPid);
+
+                        cell = row.createCell(2);
+                        cell.setCellValue(obj_type.getHn());
+                        cell.setCellStyle(csNumH);
+
+                        cell = row.createCell(3);
+                        cell.setCellValue(obj_type.getP_name());
+                        cell.setCellStyle(csDetailLeft);
+
+                        if (report.getAttribute() == '3') { // by hcode
+
+                            cell = row.createCell(4);
+                            cell.setCellValue(obj_type.getHcode());
+                            cell.setCellStyle(csDetailLeft);
+
+                        } else if (report.getAttribute() == '1') {
+
+                            cell = row.createCell(4);
+                            cell.setCellValue(obj_type.getHmain());
+                            cell.setCellStyle(csDetailLeft);
+
+                        }
+
+                        cell = row.createCell(5);
+                        cell.setCellValue(obj_type.getDate_th());
+                        cell.setCellStyle(csDetail2Center);
+
+                        cell = row.createCell(6);
+                        cell.setCellValue(obj_type.getItem_code());
+                        cell.setCellStyle(csDetailLeft);
+
+                        cell = row.createCell(7);
+                        cell.setCellValue(obj_type.getQty());
+                        cell.setCellStyle(csNum4);
+
+                        cell = row.createCell(8);
+                        cell.setCellValue(obj_type.getPrice_total());
+                        cell.setCellStyle(csNum2);
+
+                        cell = row.createCell(9);
+                        cell.setCellValue(obj_type.getStd_price());
+                        cell.setCellStyle(csNum2);
+
+                        cell = row.createCell(10);
+                        cell.setCellValue(obj_type.getTotal_reimburse());
+                        cell.setCellStyle(csNum2);
+
+                        cell = row.createCell(11);
+                        cell.setCellValue(obj_type.getTxid());
+                        cell.setCellStyle(csDetailtxid);
+
+                        curRow++;
+                        i++;
+                    }
+
+                    row = sheet.createRow(curRow);
+                    row.setHeight((short) 450);
+                    cell = row.createCell(0);
+                    cell.setCellValue("รวม");
+                    sheet.addMergedRegion(new CellRangeAddress(curRow, curRow, 0, 6));
+                    cell.setCellStyle(csNum4B);
+
+                    cell = row.createCell(1);
+                    cell.setCellStyle(csNum4B);
+
+                    cell = row.createCell(2);
+                    cell.setCellStyle(csNum4B);
+
+                    cell = row.createCell(3);
+                    cell.setCellStyle(csNum4B);
+
+                    cell = row.createCell(4);
+                    cell.setCellStyle(csNum4B);
+
+                    cell = row.createCell(5);
+                    cell.setCellStyle(csNum4B);
+
+                    cell = row.createCell(6);
+                    cell.setCellStyle(csNum4B);
+
+                    cell = row.createCell(7);
+                    cell.setCellFormula("SUM(H6:H" + (curRow) + ")");
+                    cell.setCellStyle(csNum4B);
+
+                    cell = row.createCell(8);
+                    cell.setCellFormula("SUM(I6:I" + (curRow) + ")");
+                    cell.setCellStyle(csNum2B);
+
+                    cell = row.createCell(9);
+                    cell.setCellFormula("SUM(J6:J" + (curRow) + ")");
+                    cell.setCellStyle(csNum2B);
+
+                    cell = row.createCell(10);
+                    cell.setCellFormula("SUM(K6:K" + (curRow) + ")");
+                    cell.setCellStyle(csNum2B);
+
+                    if (report.getAttribute() == '1') {
+                        // แสดง hcode หน้า รายงาน where hmain
+                        wb.setSheetName(0, objHospital.getHosHmainCode().toString());
+                        Console.LOG("รายงาน " + objHospital.getHosHmainCode().toString() + " ถูกออกรายงานเรียบร้อยแล้ว", 1);
+                    } else if (report.getAttribute() == '3') {
+                        // แสดง hmain หน้า รายงาน where hcode
+                        wb.setSheetName(0, objHospital.getHosCode().toString());
+                        Console.LOG("รายงาน " + objHospital.getHosCode().toString() + " ถูกออกรายงานเรียบร้อยแล้ว", 1);
+                    }
+
+                    wb.write(out);
+
+                    out.close();
+                    file.close();
+
+                }
+
+                programeStatus.setMessage(Constants.MSG_REPORT_SUCCESS);
+                programeStatus.setTitle(Constants.MSG_REPORT_COMPLETE);
+                programeStatus.setProcessStatus(true);
+            } else {
+                programeStatus.setMessage(Constants.MSG_REPORT_NO_DATA);
+                programeStatus.setTitle(Constants.MSG_NO_DATA);
+                programeStatus.setProcessStatus(false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+            programeStatus.setMessage(Constants.MSG_PROCESS_FAILS + e.toString());
+            programeStatus.setTitle(Constants.MSG_CONTACT_ADMIN);
+            programeStatus.setProcessStatus(false);
+        }
+        return programeStatus;
+    }
+    // ############################ for weeb site ###############
+    
+    public ProgrameStatus type5_summary(OppReport report) {
+        FileInputStream file = null;
+        FileOutputStream out = null;
+        ProgrameStatus programeStatus = new ProgrameStatus();
+        try {
+            if (report.getAttribute() == '1') {
+                file = new FileInputStream(new File(".\\xls\\TYPE5_summary_1.xls"));
+                out = new FileOutputStream(report.getPathFile() + "\\type5_summary_197_" + report.getYearMonth() + "-" + report.getNo() + ".xls");
+            } else {
+                file = new FileInputStream(new File(".\\xls\\TYPE5_summary_3.xls"));
+                out = new FileOutputStream(report.getPathFile() + "\\type5_summary_hc_" + report.getYearMonth() + "-" + report.getNo() + ".xls");
+            }
+
+            HSSFWorkbook wbType5 = new HSSFWorkbook(file);
+            this.loadStyle(wbType5);
+
+            /**
+             * End Style
+             */
+            String EXCELL_HEADER = "";
+
+            if (report.getAttribute() == '1') {
+                EXCELL_HEADER = "สรุปการจ่ายชดเชยค่าบริการผู้ป่วยนอก  กรณีตรวจวินิจฉัยพิเศษ197รายการ   ปีงบประมาณ " + DateUtil.getBudgeMonthYear_543(report.getBudget_stmp(), 9);
+            } else {
+                EXCELL_HEADER = "สรุปการจ่ายชดเชยค่าบริการผู้ป่วยนอก  กรณีค่าใช้จ่ายสูง(OPHC)  ปีงบประมาณ " + DateUtil.getBudgeMonthYear_543(report.getBudget_stmp(), 9);
+            }
+
+            String EXCELL_MONTH = report.getTitle1();
+
+            HSSFSheet sheet = wb.getSheetAt(0);
+            sheet.createFreezePane(3, 4);
+
+            HSSFCell cell = null;
+            HSSFRow row = null;
+
+            // row 0
+            row = sheet.createRow(0);
+            row.setHeight((short) 390);
+            cell = row.createCell(0);
+            cell.setCellValue(EXCELL_HEADER);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
+            cell.setCellStyle(csHead);
+
+            // row 1
+            row = sheet.createRow(1);
+            row.setHeight((short) 390);
+            cell = row.createCell(0);
+            cell.setCellValue(EXCELL_MONTH);
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 5));
+            cell.setCellStyle(csHead);
+
+            //row 4 ตัวเนื้อหา
+            int curRow = 4;
+            int i = 1;
+            ResultSet rs = null;
+
+            List<Obj_type5_sum> list_type5 = type5DAO.genReportType5_sum(report);
+
+            for (int j = 0; j < list_type5.size(); j++) {
+
+                Obj_type5_sum obj_type5 = list_type5.get(j);
+
+                row = sheet.createRow(curRow);
+                row.setHeight((short) 360);
+                cell = row.createCell(0);
+                cell.setCellValue(i);
+                cell.setCellStyle(csNum4);
+
+                if (report.getAttribute() == '1') {
+                    cell = row.createCell(1);
+                    cell.setCellValue(obj_type5.getHmain());
+                    cell.setCellStyle(csDetailCenter);
+
+                    cell = row.createCell(2);
+                    cell.setCellValue(obj_type5.getHmain_name());
+                    cell.setCellStyle(csDetail);
+                } else if (report.getAttribute() == '3') {
+                    cell = row.createCell(1);
+                    cell.setCellValue(obj_type5.getHcode());
+                    cell.setCellStyle(csDetailCenter);
+
+                    cell = row.createCell(2);
+                    cell.setCellValue(obj_type5.getHcode_name());
+                    cell.setCellStyle(csDetail);
+                }
+
+                cell = row.createCell(3);
+                cell.setCellValue(obj_type5.getCount_pid());
+                cell.setCellStyle(csNum4);
+
+                cell = row.createCell(4);
+                cell.setCellValue(obj_type5.getCount_visit());
+                cell.setCellStyle(csNum4);
+
+                cell = row.createCell(5);
+                cell.setCellValue(obj_type5.getSum_item());
+                cell.setCellStyle(csNum4);
+
+                cell = row.createCell(6);
+                cell.setCellValue(obj_type5.getSum_price_total());
+                cell.setCellStyle(csNum2);
+
+                cell = row.createCell(7);
+                cell.setCellValue(obj_type5.getSum_stdprice());
+                cell.setCellStyle(csNum2);
+
+                cell = row.createCell(8);
+                cell.setCellValue(obj_type5.getSum_total_reimburse());
+                cell.setCellStyle(csNum2);
+
+                curRow++;
+                i++;
+            }
+
+            row = sheet.createRow(curRow);
+            row.setHeight((short) 450);
+            cell = row.createCell(0);
+            cell.setCellValue("รวม");
+            sheet.addMergedRegion(new CellRangeAddress(curRow, curRow, 0, 2));
+            cell.setCellStyle(csNum4B);
+
+            cell = row.createCell(1);
+            cell.setCellStyle(csNum4B);
+
+            cell = row.createCell(2);
+            cell.setCellStyle(csNum4B);
+
+            cell = row.createCell(3);
+            cell.setCellFormula("SUM(D5:D" + (curRow) + ")");
+            cell.setCellStyle(csNum4B);
+
+            cell = row.createCell(4);
+            cell.setCellFormula("SUM(E5:E" + (curRow) + ")");
+            cell.setCellStyle(csNum4B);
+
+            cell = row.createCell(5);
+            cell.setCellFormula("SUM(F5:F" + (curRow) + ")");
+            cell.setCellStyle(csNum4B);
+
+            cell = row.createCell(6);
+            cell.setCellFormula("SUM(G5:G" + (curRow) + ")");
+            cell.setCellStyle(csNum2B);
+
+            cell = row.createCell(7);
+            //cell.setCellFormula("SUM(H5:H" + (curRow) + ")");
+            cell.setCellStyle(csNum4B);// csNum2B
+
+            cell = row.createCell(8);
+            cell.setCellFormula("SUM(I5:I" + (curRow) + ")");
+            cell.setCellStyle(csNum2B);
+
+            wb.write(out);
+            out.close();
+
+            Console.LOG("รายงานสรุป ออกเรียบร้อยแล้วครับ", 1);
+            programeStatus.setMessage(Constants.MSG_REPORT_SUCCESS);
+            programeStatus.setTitle(Constants.MSG_REPORT_COMPLETE);
+            programeStatus.setProcessStatus(true);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+            programeStatus.setMessage(Constants.MSG_PROCESS_FAILS + e.toString());
+            programeStatus.setTitle(Constants.MSG_CONTACT_ADMIN);
+            programeStatus.setProcessStatus(false);
+        }
+        return programeStatus;
+    }
+
+    public ProgrameStatus type5_genReportAllFunction(OppReport report) {
+        boolean status = false;
+        //String serviceCode = null;
+        ProgrameStatus programeStatus = new ProgrameStatus();
+        try {
+
+            if (report.getFor_use() == 0) { // 0 = ทั่วไป
+                //serviceCode = report.getServiceCode();
+
+                //****************************************Detail**************************************
+                report.setReportType(0);
+                //report.setServiceCode(serviceCode);
+
+                report.setAttribute('1'); // 197 
+                programeStatus = this.type5_detail(report);
+
+                //report.setServiceCode(serviceCode);
+                report.setAttribute('3'); // HighCost
+                programeStatus = this.type5_detail(report);
+
+                //****************************************Summary**************************************
+                report.setReportType(1);
+                //report.setServiceCode(serviceCode);
+
+                report.setAttribute('1'); // 197 
+                programeStatus = this.type5_summary(report);
+                //report.setServiceCode(serviceCode);
+                report.setAttribute('3'); // HighCost
+                programeStatus = this.type5_summary(report);
+
+            } else { // 1 = for web site claim
+                // ################### detail #####################
+                report.setWeb_type5(true); // true = สำหรับออก รายงาน สำหรับ web site claim 
+                report.setAttribute('3'); // highcost + 197'
+                programeStatus = this.type5_detail(report);
+                // ################### detail #####################
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return programeStatus;
+    }
+}

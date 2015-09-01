@@ -1,0 +1,404 @@
+package com.claim.dao;
+
+import com.claim.connection.ConnectionDB;
+import com.claim.object.HospitalService;
+import com.claim.object.OppReport;
+import com.claim.support.Console;
+import com.claim.support.Constants;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ClearingHouseDAO {
+
+    public Connection conn = null;
+
+    public ClearingHouseDAO() {
+        //conn = getConOracle();
+    }
+
+    public Connection getConOracle() {
+        Connection vConn = null;
+        ConnectionDB connec = new ConnectionDB("True", "", "", "", "", "", "", "1");
+        vConn = connec.getConnectionInf();
+        return vConn;
+    }
+
+    public void closeConnection() {
+        try {
+            if (conn != null) {
+                conn.close();
+                conn = null;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Connection openConnection() {
+        try {
+            conn = getConOracle();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return conn;
+        }
+    }
+
+    public List<HospitalService> getHospitalService(OppReport report) throws SQLException {
+        StringBuilder sql = null;
+        ResultSet rs = null;
+        PreparedStatement pstmt = null;
+        List<HospitalService> listHospital = null;
+        try {
+            this.openConnection();
+
+            if (report.getCategory() == 'D') { // Deduct
+                sql = new StringBuilder("select");
+                sql.append("  DISTINCT(hmain),hmainname,STMP");
+                sql.append(" from RPT_OPBKK_TYPE6 a where 1=1");
+
+                if (report.sizeListServiceCode() > 0) {
+                    sql.append("  AND HCODE in (");
+                    for (HospitalService hospitalService : report.getListServiceCode()) {
+                        sql.append("'").append(hospitalService.getHosCode()).append("',");
+                    }
+                    sql.append("'')");
+                }
+
+                if (!report.getYearMonth().equals("") && !report.getNo().equals("")) {
+                    sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                }
+                if (!report.getBudget_year().equals("")) {
+                    int budgetYear = Integer.parseInt(report.getBudget_year());
+                    int minBudgetYear = (budgetYear - 1);
+                    int maxBudgetYear = budgetYear;
+                    sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                    sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                }
+                sql.append(" order by hmain");
+            } else { // Payment
+                sql = new StringBuilder("select");
+                sql.append("  DISTINCT(HCODE),HCODENAME AS HNAME,STMP");
+                //sql.append("  DISTINCT(HCODE),HCODENAME AS HNAME,STMP,REMARK");
+                sql.append("  from RPT_OPBKK_TYPE6 a where 1=1");
+                if (report.sizeListServiceCode() > 0) {
+                    sql.append("  AND HCODE in (");
+                    for (HospitalService hospitalService : report.getListServiceCode()) {
+                        sql.append("'").append(hospitalService.getHosCode()).append("',");
+                    }
+                    sql.append(" '')");
+                }
+                if (!report.getYearMonth().equals("") && !report.getNo().equals("")) {
+                    sql.append("  AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                }
+                if (!report.getBudget_year().equals("")) {
+                    int budgetYear = Integer.parseInt(report.getBudget_year());
+                    int minBudgetYear = (budgetYear - 1);
+                    int maxBudgetYear = budgetYear;
+                    sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                    sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                }
+                sql.append("  order by HCODE");
+            }
+            System.out.println("sql ::==" + sql.toString());
+
+            pstmt = conn.prepareStatement(sql.toString());
+            rs = pstmt.executeQuery();
+            listHospital = new ArrayList<HospitalService>();
+
+            while (rs.next()) {
+                HospitalService service = new HospitalService();
+                if (report.getCategory() == 'D') { // Deduct 
+                    service.setHosHmainCode(rs.getString("hmain"));
+                    service.setHosHmainName(rs.getString("hmainname"));
+                    service.setStmp(rs.getString("STMP"));
+                    //service.setRemark(rs.getString("REMARK"));
+                } else { // Payment
+                    service.setHosCode(rs.getString("HCODE"));
+                    service.setHosName(rs.getString("HNAME"));
+                    service.setStmp(rs.getString("STMP"));
+                    //service.setRemark(rs.getString("REMARK"));
+                }
+                listHospital.add(service);
+            }
+
+            return listHospital;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            this.closeConnection();
+            return listHospital;
+        }
+    }
+
+    public ResultSet getReportByHcode(OppReport report) {
+        ResultSet rs = null;
+        PreparedStatement pstmt = null;
+        StringBuilder sql = null;
+        try {
+
+            this.openConnection();
+
+            if (report.getReportType() == 0) { // รายละเอียด
+                if (report.getCategory() == 'D') { // หัก
+                    sql = new StringBuilder(" SELECT");
+                    sql.append(" pid,hn,pname,sex,age,");
+                    sql.append(" to_char(a.dateopd,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI') as dateopd,dateopd as dateopd2,");
+                    sql.append(" hcode||': '||hcodename as hcode,paid_model,pdxcode,");
+                    sql.append(" cha21,cha31,cha51,cha61,cha71,cha81,cha91,chaa1,chab1,chac1,chad1,chae1,chah1,chaj1,chatotal,reimburse");
+                    sql.append(" ,txid");
+
+                    /*
+                     modified 01-07-2015 by poolsawat
+                     */
+                    sql.append(" ,(select INVOICE_NO from opbkk_service s where s.txid = a.txid) as INVOICE_NO");
+                    /*
+                     modified 01-07-2015 by poolsawat
+                     */
+
+                    sql.append(" from RPT_OPBKK_TYPE6 a where 1=1");
+                    if (!report.getServiceCode().equals("")) {
+                        sql.append(" AND HMAIN = '").append(report.getServiceCode()).append("'");
+                    }
+                    if (!report.getYearMonth().equals("") && !report.getNo().equals("")) {
+                        sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                    }
+                    if (!report.getBudget_year().equals("")) {
+                        int budgetYear = Integer.parseInt(report.getBudget_year());
+                        int minBudgetYear = (budgetYear - 1);
+                        int maxBudgetYear = budgetYear;
+                        sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                        sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                    }
+                    sql.append(" order by dateopd2");
+                } else if (report.getCategory() == 'P') {  // จ่าย payment
+                    sql = new StringBuilder(" select");
+                    sql.append(" pid,hn,pname,sex,age,");
+                    sql.append(" to_char(a.dateopd,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI') as dateopd,dateopd as dateopd2,");
+                    sql.append(" hmain||': '||hmainname as hmain,paid_model,pdxcode,");
+                    sql.append(" cha21,cha31,cha51,cha61,cha71,cha81,cha91,chaa1,chab1,chac1,chad1,chae1,chah1,chaj1,chatotal,reimburse");
+                    sql.append(" ,txid");
+                    
+                     /*
+                     modified 01-07-2015 by poolsawat
+                     */
+                    sql.append(" ,(select INVOICE_NO from opbkk_service s where s.txid = a.txid) as INVOICE_NO");
+                    /*
+                     modified 01-07-2015 by poolsawat
+                     */
+                    
+                    sql.append(" from RPT_OPBKK_TYPE6 a where 1=1");
+                    if (!report.getServiceCode().equals("")) {
+                        sql.append(" AND HCODE = '").append(report.getServiceCode()).append("'");
+                    }
+                    if (!report.getYearMonth().equals("") && !report.getNo().equals("")) {
+                        sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                    }
+                    if (!report.getBudget_year().equals("")) {
+                        int budgetYear = Integer.parseInt(report.getBudget_year());
+                        int minBudgetYear = (budgetYear - 1);
+                        int maxBudgetYear = budgetYear;
+                        sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                        sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                    }
+                    sql.append(" order by dateopd2");
+                }
+            } else {  // สรุป
+                if (report.getFor_use() == 0) { // for genaral use
+                    if (report.getCategory() == 'D') { // deduct
+                        sql = new StringBuilder(" SELECT");
+                        sql.append(" ");
+                        sql.append(" hmain,hmainname,count(distinct pid) npid,count(distinct txid) nvisit,");
+                        sql.append(" sum(chatotal) charge,sum(reimburse) reimburse");
+                        sql.append(" from RPT_OPBKK_TYPE6 WHERE 1=1");
+                        if (!report.getYearMonth().equals("") && !report.getNo().equals("")) {
+                            sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                        }
+                        if (!report.getServiceCode().equals("")) {
+                            sql.append(" AND hmain = '").append(report.getServiceCode()).append("'");
+                        }
+                        if (!report.getBudget_year().equals("")) {
+                            int budgetYear = Integer.parseInt(report.getBudget_year());
+                            int minBudgetYear = (budgetYear - 1);
+                            int maxBudgetYear = budgetYear;
+                            sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                            sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                        }
+                        sql.append(" group by hmain,hmainname");
+                    } else { // payment
+                        sql = new StringBuilder(" SELECT");
+                        sql.append(" hcode,hcodename,count(distinct pid) npid,count(distinct txid) nvisit,");
+                        sql.append(" sum(chatotal) charge,sum(reimburse) reimburse");
+                        sql.append(" from RPT_OPBKK_TYPE6  WHERE 1=1");
+                        if (!report.getYearMonth().equals("") && !report.getNo().equals("")) {
+                            sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                        }
+                        if (!report.getServiceCode().equals("")) {
+                            sql.append(" AND hcode = '").append(report.getServiceCode()).append("'");
+                        }
+                        if (!report.getBudget_year().equals("")) {
+                            int budgetYear = Integer.parseInt(report.getBudget_year());
+                            int minBudgetYear = (budgetYear - 1);
+                            int maxBudgetYear = budgetYear;
+                            sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                            sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                        }
+                        sql.append(" group by hcode,hcodename");
+                    }
+                } else if (report.getFor_use() == 1) {  // for web site claim
+                    if (report.getCategory() == 'D') { // deduct
+                        sql = new StringBuilder(" SELECT");
+                        sql.append(" hcode,hcodename,count(distinct pid) npid,count(distinct txid) nvisit,sum(chatotal) charge,sum(reimburse) reimburse");
+                        sql.append(" from RPT_OPBKK_TYPE6 WHERE 1=1");
+                        if (!report.getYearMonth().equals("") && !report.getNo().equals("")) {
+                            sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                        }
+                        if (!report.getServiceCode().equals("")) {
+                            sql.append(" AND hmain = '").append(report.getServiceCode()).append("'");
+                        }
+                        if (!report.getBudget_year().equals("")) {
+                            int budgetYear = Integer.parseInt(report.getBudget_year());
+                            int minBudgetYear = (budgetYear - 1);
+                            int maxBudgetYear = budgetYear;
+                            sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                            sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                        }
+                        sql.append(" group by hcode,hcodename");
+                    } else { // payment
+                        sql = new StringBuilder(" SELECT");
+                        sql.append(" hmain,hmainname,count(distinct pid) npid,count(distinct txid) nvisit,sum(chatotal) charge,sum(reimburse) reimburse");
+                        sql.append(" from RPT_OPBKK_TYPE6  WHERE 1=1");
+                        if (!report.getYearMonth().equals("") && !report.getNo().equals("")) {
+                            sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                        }
+                        if (!report.getServiceCode().equals("")) {
+                            sql.append(" AND hcode = '").append(report.getServiceCode()).append("'");
+                        }
+                        if (!report.getBudget_year().equals("")) {
+                            int budgetYear = Integer.parseInt(report.getBudget_year());
+                            int minBudgetYear = (budgetYear - 1);
+                            int maxBudgetYear = budgetYear;
+                            sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                            sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                        }
+                        sql.append(" group by hmain,hmainname");
+                    }
+                }
+
+            }
+            System.out.println("sql ::==" + sql.toString());
+            if (Constants.IS_SHOW_QUERY) {
+                Console.LOG(" QUERY ::==" + sql.toString(), 1);
+            }
+
+            pstmt = conn.prepareStatement(sql.toString());
+            rs = pstmt.executeQuery();
+
+            return rs;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return rs;
+    }
+
+    public ResultSet genReportHCodeByHmain(OppReport report) {
+        ResultSet rs = null;
+        PreparedStatement pstmt = null;
+        StringBuilder sql = null;
+        try {
+            this.openConnection();
+
+            if (report.getReportType() == 0) { // รายละเอียด
+                if (report.getCategory() == 'D') { // Deduct
+                    sql = new StringBuilder(" SELECT");
+                    sql.append(" hcode,hcodename,count(distinct pid) npid,count(distinct txid) nvisit,sum(chatotal) charge,sum(reimburse) reimburse");
+                    sql.append(" from RPT_OPBKK_TYPE6 WHERE 1=1");
+                    if (!report.getServiceCode().equals("")) {
+                        sql.append(" AND HMAIN = '").append(report.getServiceCode()).append("'");
+                    }
+                    if (!report.getYearMonth().equals("") && !report.getNo().equals("")) {
+                        sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                    }
+                    if (!report.getBudget_year().equals("")) {
+                        int budgetYear = Integer.parseInt(report.getBudget_year());
+                        int minBudgetYear = (budgetYear - 1);
+                        int maxBudgetYear = budgetYear;
+                        sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                        sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                    }
+                    sql.append(" group by hcode,hcodename");
+                } else { // Payment
+                    sql = new StringBuilder(" SELECT");
+                    sql.append(" hmain,hmainname,count(distinct pid) npid,count(distinct txid) nvisit,sum(chatotal) charge,sum(reimburse) reimburse");
+                    sql.append(" from RPT_OPBKK_TYPE6 WHERE 1=1");
+                    if (!report.getServiceCode().equals("")) {
+                        sql.append(" AND HCODE = '").append(report.getServiceCode()).append("'");
+                    }
+                    if (!report.getYearMonth().equals("") && !report.getNo().equals("")) {
+                        sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                    }
+                    if (!report.getBudget_year().equals("")) {
+                        int budgetYear = Integer.parseInt(report.getBudget_year());
+                        int minBudgetYear = (budgetYear - 1);
+                        int maxBudgetYear = budgetYear;
+                        sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                        sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                    }
+                    sql.append(" group by hmain,hmainname");
+                }
+            } else {
+                // --------------------------------
+            }
+            System.out.println("sql ::==" + sql.toString());
+            if (Constants.IS_SHOW_QUERY) {
+                Console.LOG(" QUERY ::==" + sql.toString(), 1);
+            }
+
+            pstmt = conn.prepareStatement(sql.toString());
+            return pstmt.executeQuery();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return rs;
+    }
+
+    public String getClearingHouseStmpDescDistinct(String obYM, String obN) {
+        String titleTimeStmpDesc = "";
+        StringBuilder sql = null;
+        ResultSet rs = null;
+        PreparedStatement pstm = null;
+        try {
+            this.openConnection();
+
+            sql = new StringBuilder("SELECT");
+            sql.append(" distinct(select rh.STMP_DESC from rpt_header rh where rh.stmp=r.stmp and rh.OPTYPE='CH') STMP_DESC");
+            sql.append("  from RPT_OPBKK_TYPE6 r");
+
+            sql.append(" WHERE r.STMP = '").append(obYM).append("-").append(obN).append("'");
+
+            // sql.append(" GROUP by r.STMP_DESC");
+            System.out.println("sql ::==" + sql.toString());
+            if (Constants.IS_SHOW_QUERY) {
+                Console.LOG(" QUERY ::==" + sql.toString(), 1);
+            }
+
+            pstm = conn.prepareStatement(sql.toString());
+            rs = pstm.executeQuery();
+
+            while (rs.next()) {
+                titleTimeStmpDesc = rs.getString("STMP_DESC");
+            }
+
+            return titleTimeStmpDesc;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            this.closeConnection();
+            return titleTimeStmpDesc;
+        }
+    }
+}

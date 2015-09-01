@@ -1,0 +1,281 @@
+/*
+ * To change this license header; choose License Headers in Project Properties.
+ * To change this template file; choose Tools | Templates
+ * and open the template in the editoprivate String 
+ */
+package com.claim.object;
+
+import com.claim.support.StringOpUtil;
+
+/**
+ *
+ * @author Poolsawat.a
+ */
+public class Obj_noni_detail {
+
+    private String txid;
+    private String hcode;
+    private String hcodename;
+    private String hmain;
+    private String hmainname;
+    private String pid;
+    private String hn;
+    private String pname;
+    private String dateopd;
+    private String dateopd_thai_buddha;
+    private String noniclass;
+    private String icd10;
+    private String icd9;
+    private double chrg_ophc;
+    private double chrg_197;
+    private double chrg_stditem;    
+    private double chrg_middle_priced_items;
+    private double chrg_other;
+    private double chrg_total;
+    private double payrate;
+    private double paid_ophc;
+    private double paid_197;
+    private double paid_stditem;
+    private double paid_middle_priced_items;
+    private double paid_other;
+    private double paid_total;
+    private String remark;
+    private String stmp;
+    private String rpt_date;
+
+    public String getTxid() {
+        return StringOpUtil.removeNull(txid);
+    }
+
+    public void setTxid(String txid) {
+        this.txid = txid;
+    }
+
+    public String getHcode() {
+        return StringOpUtil.removeNull(hcode);
+    }
+
+    public void setHcode(String hcode) {
+        this.hcode = hcode;
+    }
+
+    public String getHcodename() {
+        return StringOpUtil.removeNull(hcodename);
+    }
+
+    public void setHcodename(String hcodename) {
+        this.hcodename = hcodename;
+    }
+
+    public String getHmain() {
+        return StringOpUtil.removeNull(hmain);
+    }
+
+    public void setHmain(String hmain) {
+        this.hmain = hmain;
+    }
+
+    public String getHmainname() {
+        return StringOpUtil.removeNull(hmainname);
+    }
+
+    public void setHmainname(String hmainname) {
+        this.hmainname = hmainname;
+    }
+
+    public String getPid() {
+        return StringOpUtil.removeNull(pid);
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
+    }
+
+    public String getHn() {
+        return StringOpUtil.removeNull(hn);
+    }
+
+    public void setHn(String hn) {
+        this.hn = hn;
+    }
+
+    public String getPname() {
+        return StringOpUtil.removeNull(pname);
+    }
+
+    public void setPname(String pname) {
+        this.pname = pname;
+    }
+
+    public String getDateopd() {
+        return StringOpUtil.removeNull(dateopd);
+    }
+
+    public void setDateopd(String dateopd) {
+        this.dateopd = dateopd;
+    }
+
+    public String getDateopd_thai_buddha() {
+        return StringOpUtil.removeNull(dateopd_thai_buddha);
+    }
+
+    public void setDateopd_thai_buddha(String dateopd_thai_buddha) {
+        this.dateopd_thai_buddha = dateopd_thai_buddha;
+    }
+
+    public String getNoniclass() {
+        return StringOpUtil.removeNull(noniclass);
+    }
+
+    public void setNoniclass(String noniclass) {
+        this.noniclass = noniclass;
+    }
+
+    public String getIcd10() {
+        return StringOpUtil.removeNull(icd10);
+    }
+
+    public void setIcd10(String icd10) {
+        this.icd10 = icd10;
+    }
+
+    public String getIcd9() {
+        return StringOpUtil.removeNull(icd9);
+    }
+
+    public void setIcd9(String icd9) {
+        this.icd9 = icd9;
+    }
+
+    public double getChrg_ophc() {
+        return chrg_ophc;
+    }
+
+    public void setChrg_ophc(double chrg_ophc) {
+        this.chrg_ophc = chrg_ophc;
+    }
+
+    public double getChrg_197() {
+        return chrg_197;
+    }
+
+    public void setChrg_197(double chrg_197) {
+        this.chrg_197 = chrg_197;
+    }
+
+    public double getChrg_stditem() {
+        return chrg_stditem;
+    }
+
+    public void setChrg_stditem(double chrg_stditem) {
+        this.chrg_stditem = chrg_stditem;
+    }
+
+    public double getChrg_middle_priced_items() {
+        return chrg_middle_priced_items;
+    }
+
+    public void setChrg_middle_priced_items(double chrg_middle_priced_items) {
+        this.chrg_middle_priced_items = chrg_middle_priced_items;
+    }
+
+    public double getChrg_other() {
+        return chrg_other;
+    }
+
+    public void setChrg_other(double chrg_other) {
+        this.chrg_other = chrg_other;
+    }
+
+    public double getChrg_total() {
+        return chrg_total;
+    }
+
+    public void setChrg_total(double chrg_total) {
+        this.chrg_total = chrg_total;
+    }
+
+    public double getPayrate() {
+        return payrate;
+    }
+
+    public void setPayrate(double payrate) {
+        this.payrate = payrate;
+    }
+
+    public double getPaid_ophc() {
+        return paid_ophc;
+    }
+
+    public void setPaid_ophc(double paid_ophc) {
+        this.paid_ophc = paid_ophc;
+    }
+
+    public double getPaid_197() {
+        return paid_197;
+    }
+
+    public void setPaid_197(double paid_197) {
+        this.paid_197 = paid_197;
+    }
+
+    public double getPaid_stditem() {
+        return paid_stditem;
+    }
+
+    public void setPaid_stditem(double paid_stditem) {
+        this.paid_stditem = paid_stditem;
+    }
+
+    public double getPaid_middle_priced_items() {
+        return paid_middle_priced_items;
+    }
+
+    public void setPaid_middle_priced_items(double paid_middle_priced_items) {
+        this.paid_middle_priced_items = paid_middle_priced_items;
+    }
+
+    public double getPaid_other() {
+        return paid_other;
+    }
+
+    public void setPaid_other(double paid_other) {
+        this.paid_other = paid_other;
+    }
+
+    public double getPaid_total() {
+        return paid_total;
+    }
+
+    public void setPaid_total(double paid_total) {
+        this.paid_total = paid_total;
+    }
+
+    
+
+    public String getRemark() {
+        return StringOpUtil.removeNull(remark);
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public String getStmp() {
+        return StringOpUtil.removeNull(stmp);
+    }
+
+    public void setStmp(String stmp) {
+        this.stmp = stmp;
+    }
+
+    public String getRpt_date() {
+        return StringOpUtil.removeNull(rpt_date);
+    }
+
+    public void setRpt_date(String rpt_date) {
+        this.rpt_date = rpt_date;
+    }
+    
+    
+}

@@ -1,0 +1,65 @@
+package com.claim.controller;
+
+import com.claim.dao.CreateDataStoreDAO;
+import com.claim.object.ObjCallStoreCreateData;
+import com.claim.support.ProgrameStatus;
+import java.sql.SQLException;
+
+public class CreateDataStoreController {
+
+    private CreateDataStoreDAO createStoreDAO = null;
+
+    public CreateDataStoreController() {
+        createStoreDAO = new CreateDataStoreDAO();
+    }
+
+    public ProgrameStatus startRunStore(ObjCallStoreCreateData bean) throws SQLException {
+
+        ProgrameStatus status = new ProgrameStatus();
+        //check duppicate stmp
+        boolean is_check = createStoreDAO.checkStmpDupicate(bean.getIndex_table(), bean.getStmp().substring(0, 6));
+        if (is_check) {
+            // ซ้ำ
+            status.setTitle(" System Warning");
+            status.setMessage(" STMP นี้ สร้างข้อมูล ไปแล้ว");
+            status.setProcessStatus(false);
+        } else {
+            status = createStoreDAO.callOracleStored(bean);
+        }
+        return status;
+    }
+
+    public String getLogReport(int keyReport) {
+        return this.createStoreDAO.getLogReportLastRecord(keyReport);
+    }
+
+    public boolean checkCreateDataDupicate(ObjCallStoreCreateData bean) {
+        boolean status = false;
+        //check duppicate stmp
+        System.out.println(" getStmpyyyymm_no: "+bean.getStmpyyyymm_no());
+        System.out.println(" bean.getStmp_no() : "+bean.getStmp_no());
+        
+        status = createStoreDAO.checkStmpDupicate(bean.getIndex_table(), bean.getStmpyyyymm_no());
+        System.out.println("checkCreateDataDupicate : "+status);
+        return status;
+    }
+    /* public boolean checkStmpPaymentStatus_pass(int indexTable, String stmp) {
+     Objpayment_result objStatus = new Objpayment_result();
+
+     Objpayment_status objStaPay = new Objpayment_status();
+     objStaPay.setPayment_type(indexTable);
+     objStaPay.setStmp(stmp);
+
+     PaymentStatusController paymentStatusController = new PaymentStatusController();
+
+     List<Objpayment_result> listStatus = paymentStatusController.getListPaymentResult(objStaPay);
+
+     if (!listStatus.isEmpty()) {
+     objStatus = listStatus.get(0);
+     }
+     if (objStatus.getStatus() != null) { // payment pass
+     return true;
+     }
+     return false;
+     }*/
+}

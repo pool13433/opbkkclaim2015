@@ -1,0 +1,97 @@
+package com.claim.connection;
+
+import com.claim.support.Console;
+import com.claim.support.Constants;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class ConnectionDB {
+
+    public Connection conn = null;
+    public static String URL_ORACLE = "jdbc:oracle:thin:@";
+    public String url;
+
+    public String IPserver;
+    public String port;
+    public String database;
+    public String typeDB;
+    public String username;
+    public String password;
+
+    public ConnectionDB() {
+        
+    }
+    
+    public ConnectionDB(String CaseDB, String IPserver, String port, String database, String typeDB, String username, String password, String Vcase) {
+        if (CaseDB.equals("Test")) {
+            this.IPserver = IPserver;
+            this.port = port;
+            this.database = database;
+            this.typeDB = typeDB;
+            this.username = username;
+            this.password = password;
+            System.err.println("Test");
+        } else {
+            System.err.println("true");
+            try {
+                BufferedReader in;
+
+                if (Vcase.equals("1")) {
+                    in = new BufferedReader(new FileReader(".\\bin\\database.conf"));
+                } else {
+                    in = new BufferedReader(new FileReader(".\\bin\\databaseIPBKK2.conf"));
+                }
+
+                this.IPserver = in.readLine();
+                this.database = in.readLine();
+                this.typeDB = in.readLine();
+                this.port = in.readLine();
+                this.username = in.readLine();
+                this.password = in.readLine();
+
+                System.out.println("database ::==" + this.database);
+                System.out.println("username ::==" + this.username);
+                //System.out.println("password :: " + this.password);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public Connection getConnectionInf() {
+        try {
+            // System.out.println("public Connection getConnectionInf()" + getURL());
+            if (this.database == null) {
+                return null;
+            }
+            try {
+                Class.forName(this.typeDB);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            conn = DriverManager.getConnection(getURL(), this.username, this.password);
+            conn.setAutoCommit(false);
+
+            if (conn == null) {
+                Console.LOG(Constants.MSG_CONNECTION_FAIL, 0);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ConnectionDB.class.getName()).log(Level.SEVERE, null, ex);
+            Console.LOG(ex.getMessage(), 0);
+        }
+
+        return conn;
+    }
+
+    public String getURL() {
+        url = url = URL_ORACLE + this.IPserver + ":" + this.port + ":" + this.database;
+        //System.out.println("url:>"+url);
+        return url;
+    }
+
+}

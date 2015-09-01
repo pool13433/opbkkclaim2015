@@ -1,0 +1,147 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.object;
+
+import com.claim.support.StringOpUtil;
+
+/**
+ *
+ * @author Poolsawat.a
+ */
+public class ObjRptType5Detail {
+    private String p_name;
+    private String pid;
+    private String hn;
+    private String date_th;
+    private String date_opd;
+    private String hcode;
+    private String hmain;
+    private String item_code;
+    private int qty;
+    private double std_price;
+    private double price_total;
+    private double total_reimburse;
+    private String txid;
+    private String invoice_no;
+
+    public String getP_name() {
+        return p_name;
+    }
+
+    public void setP_name(String p_name) {
+        this.p_name = p_name;
+    }
+
+    public String getPid() {
+        return pid;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
+    }
+
+    public String getHn() {
+        return hn;
+    }
+
+    public void setHn(String hn) {
+        this.hn = hn;
+    }
+
+    public String getDate_th() {
+        return date_th;
+    }
+
+    public void setDate_th(String date_th) {
+        this.date_th = date_th;
+    }
+
+    public String getDate_opd() {
+        return date_opd;
+    }
+
+    public void setDate_opd(String date_opd) {
+        this.date_opd = date_opd;
+    }
+
+    public String getHcode() {
+        return hcode;
+    }
+
+    public void setHcode(String hcode) {
+        this.hcode = hcode;
+    }
+
+    public String getHmain() {
+        return hmain;
+    }
+
+    public void setHmain(String hmain) {
+        this.hmain = hmain;
+    }
+
+    public String getItem_code() {
+        return item_code;
+    }
+
+    public void setItem_code(String item_code) {
+        this.item_code = item_code;
+    }
+
+    public int getQty() {
+        return qty;
+    }
+
+    public void setQty(int qty) {
+        this.qty = qty;
+    }
+
+    public double getStd_price() {
+        return std_price;
+    }
+
+    public void setStd_price(double std_price) {
+        this.std_price = std_price;
+    }
+
+    public double getPrice_total() {
+        return price_total;
+    }
+
+    public void setPrice_total(double price_total) {
+        this.price_total = price_total;
+    }
+
+    public double getTotal_reimburse() {
+        return total_reimburse;
+    }
+
+    public void setTotal_reimburse(double total_reimburse) {
+        this.total_reimburse = total_reimburse;
+    }
+
+    public String getTxid() {
+        return txid;
+    }
+
+    public void setTxid(String txid) {
+        this.txid = txid;
+    }
+
+    public String getInvoice_no() {
+        return StringOpUtil.removeNull(invoice_no);
+    }
+
+    public void setInvoice_no(String invoice_no) {
+        this.invoice_no = invoice_no;
+    }
+    
+    
+
+    @Override
+    public String toString() {
+        return "Obj_type5{" + "p_name=" + p_name + ", pid=" + pid + ", hn=" + hn + ", date_th=" + date_th + ", date_opd=" + date_opd + ", hcode=" + hcode + ", hmain=" + hmain + ", item_code=" + item_code + ", qty=" + qty + ", std_price=" + std_price + ", price_total=" + price_total + ", total_reimburse=" + total_reimburse + ", txid=" + txid + '}';
+    }        
+}

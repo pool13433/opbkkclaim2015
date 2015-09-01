@@ -1,0 +1,8 @@
+#Properties Database
+
+server_ip=10.1.0.26
+server_service_name=oppp
+server_driver_db=oracle.jdbc.driver.OracleDriver
+server_port=1521
+server_username=OPBKKCLAIM
+server_password=55#1C(D8B1

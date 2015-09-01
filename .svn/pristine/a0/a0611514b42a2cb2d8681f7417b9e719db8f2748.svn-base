@@ -1,0 +1,857 @@
+package com.claim.dao;
+
+import com.claim.connection.ConnectionDB;
+import com.claim.object.HospitalService;
+import com.claim.object.OppReport;
+import com.claim.object.ResultBean;
+import com.claim.object.Stmp;
+import com.claim.support.BaseFunction;
+import com.claim.support.Console;
+import com.claim.support.Constants;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class OppDAO {
+
+    private BaseFunction function;
+    Connection conn = null;
+
+    public OppDAO() {
+        function = new BaseFunction();
+    }
+
+    private Connection getConOracle() throws SQLException {
+        Connection inConn = null;
+        try {
+            ConnectionDB connec = new ConnectionDB("True", "", "", "", "", "", "", "1");
+            inConn = connec.getConnectionInf();
+            if (inConn == null) {
+                Console.LOG(Constants.MSG_CONNECTION_FAIL, 0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return inConn;
+    }
+
+    public void openConnection() {
+        try {
+            this.conn = getConOracle();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void closeConnection() {
+        try {
+            if (this.conn != null) {
+                this.conn.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<HospitalService> getServiceAll(String serviceCode) throws SQLException {
+
+        PreparedStatement pstmt = null;
+        StringBuilder sql = null;
+        ResultSet rs = null;
+        List<HospitalService> listHosp = new ArrayList<HospitalService>();
+        try {
+            conn = getConOracle();
+
+            System.out.println("serviceCode : " + serviceCode);
+
+            sql = new StringBuilder();
+            sql.append(" SELECT * FROM MASTER_HOSPITAL");
+            sql.append(" WHERE PROVINCE_ID = '").append(1000).append("'");
+            sql.append("  AND (HCODE LIKE '%").append(String.valueOf(serviceCode)).append("%'");
+            sql.append("  OR HNAME LIKE '%").append(String.valueOf(serviceCode)).append("%'");
+            sql.append(" )");
+            sql.append("  ORDER BY HCODE ASC");
+
+            System.out.println("sql ==>>" + sql);
+            pstmt = conn.prepareStatement(sql.toString());
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                HospitalService service = new HospitalService();
+                service.setHosCode(rs.getString("HCODE"));
+                service.setHosName(rs.getString("HNAME"));
+                listHosp.add(service);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        } finally {
+            if (pstmt != null) {
+                pstmt.close();
+            }
+            if (rs != null) {
+                rs.close();
+            }
+            this.closeConnection();
+        }
+        return listHosp;
+    }
+
+    public ResultSet genReport(OppReport report) throws SQLException {
+        ResultSet rs = null;
+        PreparedStatement pstmt = null;
+        String sql = null;
+        try {
+            conn = getConOracle();
+            switch (report.getReportTypeId()) {
+
+                case 1:
+                    System.out.println("serviceCode ===>>" + report.getServiceCode());
+                    if (report.getReportType() == 0) { // case report detail
+                        sql = "SELECT * FROM rpt_opbkk_type5 WHERE 1=1";
+
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HMAINOP_N = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+                        //sql += " AND rownum < 100";
+                        sql += " ORDER BY TXID ASC";
+                    } else { // case report summary
+
+                        sql = "select count(*) as COUNTITEM,HMAINOP_N,HMAINOP_NAME,count(PID) as COUNTPID,sum(QTY)as SUMQTY,sum(PRICE_TOTAL) as SUMPRICE,sum(TOTALREIMBURSE) as SUMREIMBURSE";
+                        sql += " from RPT_OPBKK_TYPE5 ";
+
+                        if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'"; // wait columns STMP 
+                            //sql += " where to_char(DATEOPD,'YYMM') = '" + report.getYear() + report.getMonth() + "'";
+                        }
+                        sql += " group by 1,HMAINOP_N,HMAINOP_NAME order by  HMAINOP_N";
+
+                    }
+                    System.out.println("sql==>>" + sql);
+                    break;
+                case 2:
+                    if (report.getReportType() == 0) {
+                        // ใช้ method ListMergeType4_Case2 และ method ListCaseType4_Case2
+                    } else {
+                        sql = "SELECT * FROM RPT_OPBKK_OP57_SUMMARY_VIEW WHERE 1=1";
+                        if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "' ";
+                        }
+                        sql += " ORDER BY STMP,HCODE";
+                    }
+                    break;
+                case 3:
+                    if (report.getReportType() == 0) {
+                        // ใช้ method ListMergeType4_Case3 และ method ListCaseType4_Case3
+                    } else {
+                        sql = "SELECT STMP,HCODE,HNAME,COUNT_OPAE,PRICE_OPAE,PRICE_TOTAL,OTHPRICE_OPAE,REIMBURSE_OPAE,TOTALREIMBURSE_OPAE ";
+                        sql += " FROM RPT_OPBKK_OPAE57_SUMMARY_VIEW WHERE 1=1";
+
+                        if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "' ";
+                        }
+
+                        sql += " ORDER BY STMP,HCODE";
+                        System.out.println("sql====>>" + sql);
+                    }
+
+                    break;
+                case 4:
+                    if (report.getReportType() == 0) {
+                        sql = "";
+                    } else {
+                        sql = "";
+                    }
+                    System.out.println("sql==>>" + sql);
+                    break;
+                case 5:
+                    if (report.getReportType() == 0) {
+                        // ใช้ method ListMergeType4_Case5 และ method ListCaseType4_Case5
+                    } else {
+                        sql = "SELECT STMP,HCODE,HNAME,COUNT_OP,PRICE_TOTAL,PRICE_TOTAL_OP,OTHPRICE_OP,REIMBURSE,TOTALREIMBURSE_OP FROM rpt_opbkk_op_summary_view WHERE 1=1";
+
+                        if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "' ";
+                        }
+
+                        sql += " ORDER BY STMP,HCODE";
+                    }
+                    System.out.println("sql==>>" + sql);
+                    break;
+                case 6:
+                    if (report.getReportType() == 0) {
+                        // ใช้ method listMergeType4_6 และ listCaseType4_6
+                    } else {
+
+                        sql = "SELECT STMP,HCODE,HNAME,COUNT_HCODE,PRICE_TOTAL,TOTALREIMBURSE FROM RPT_OPBKK_EQ_BKK_SUMMARY_VIEW  WHERE 1=1";
+
+                        if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "' ";
+                        }
+
+                        sql += " ORDER BY STMP,HCODE";
+                    }
+                    System.out.println("sql==>>" + sql);
+                    break;
+                case 7:
+                    if (report.getReportType() == 0) {
+                        // ใช้ method listMergeType4_7 และ listCaseType4_7
+                    } else {
+                        sql = " SELECT STMP,HCODE,HNAME,COUNT_HCODE,PRICE_TOTAL,TOTALREIMBURSE FROM rpt_opbkk_eq_oth_summary_view";
+                        if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "' ";
+                        }
+                        sql += " ORDER BY HCODE";
+                    }
+                    System.out.println("sql==>>" + sql);
+                    break;
+                case 8:
+                    if (report.getReportType() == 0) {
+                        sql = "select PID,FNAME,LNAME,HCODE,HNAME,HMAINOP_N,";
+                        sql += "HN,DATEOPD,REFERINHOSP_NAME,RFCAR_DISTANCE,";
+                        sql += "RFCAR_CHARGE,RFCAR_REIMBURSE from RPT_OPBKK_RFCHARGE WHERE 1=1";
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "' ";
+                        }
+                        //sql += " AND rownum < 100";
+                        sql += " ORDER BY PID";
+
+                    } else {
+                        sql = " SELECT STMP,HCODE,HNAME,COUNT_HCODE,TOTAL_CHARGE,TOTAL_RFREIMBURSE FROM rpt_opbkk_rfcharge_view";
+                        if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "' ";
+                        }
+                        sql += " ORDER BY HCODE";
+                    }
+                    System.out.println("sql==>>" + sql);
+                    break;
+                case 9:
+                    if (report.getReportType() == 0) {
+
+                        sql = "SELECT  ";
+                        sql += " TXID,pid,fname ||'  '||lname flname,";
+                        sql += " hn,";
+                        sql += " to_char(DATEOPD,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI') as dateopdTh,";
+                        sql += " d_senddate,";
+                        sql += " to_char(d_senddate,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI') as senddateTh,";
+                        sql += " right_name,totalreimburse";
+                        sql += " FROM RPT_OPBKK_INDV WHERE 1=1";
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND INDV_STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+                        // sql += " AND rownum < 100";
+
+                        System.out.println("sql====>>" + sql);
+                    } else {
+                        sql = "SELECT COUNT(*) as COUNTA , HCODE ,HNAME ,sum(TOTALREIMBURSE) as sumTOTALREIMBURSE,TOTALREIMBURSE FROM RPT_OPBKK_INDV WHERE 1=1";
+                        if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                            sql += " AND INDV_STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+                        sql += " group by 1, HCODE ,HNAME ,TOTALREIMBURSE ORDER BY HCODE,HNAME ";
+                        System.out.println("sql====>>" + sql);
+                    }
+                    break;
+                case 10: // op refer  deduct หัก เดี่ยว 
+                    if (report.getReportType() == 0) {
+
+                        sql = "select PID,HN,HCODE,HNAME,FNAME||' '||LNAME FLNAME,HCODE ||':'||HNAME HCNNAME,";
+                        sql += " to_char(dateopd,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI') as dateopdTh,";
+                        sql += " dateopd, pdxcode, ";
+                        sql += " chrg_hc, chrg_197, chrg_drug, chrg_other, chrg_total,";
+                        sql += " paid_hc, paid_197, paid_drug, paid_other, paid_total, ";
+                        sql += " deduct_ophc, deduct_oprf, deduct_hmain, deduct_total, deduct_hmain deduct_hmain_final,";
+                        sql += " remark,";
+                        sql += " is_single, stmp";
+                        sql += " from RPT_OPBKK_OPREFER refer WHERE 1=1";
+
+                        sql += " AND is_single = 1 ";
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HMAINOP_N = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+//                        //sql += " AND rownum < 100";
+
+                    } else {
+                        sql = "select HMAINOP_N, hmainop_name,";
+                        sql += " count(case when approved='5' THEN 5 end)pid_normal_count,";
+                        sql += " count(case when approved='8' THEN 8 end)pid_appeal_count,";
+                        sql += " count(*)pid_normal_appeal_total,";
+                        sql += " sum(chrg_hc)sum_chrg_hc, sum(chrg_197) sum_chrg_197, sum(chrg_drug)sum_chrg_drug, sum(chrg_other)sum_chrg_other, sum(chrg_total)sum_chrg_total,";
+                        //sql += " sum(paid_hc)sum_paid_hc, sum(paid_197) sum_paid_197, sum(paid_drug) sum_paid_drug, sum(paid_other) sum_paid_other, sum(paid_total) sum_paid_total ";
+                        sql += " sum(deduct_ophc)sum_deduct_ophc, sum(deduct_oprf)sum_deduct_oprf, sum(deduct_hmain)sum_deduct_hmain, sum(deduct_total)sum_deduct_total, sum(deduct_hmain) deduct_hmain_final";
+                        sql += " from RPT_OPBKK_OPREFER refer";
+                        sql += " where 1=1";
+                        sql += " AND is_single=1  ";
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {   // sql += " AND stmp='2014011";
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+                        sql += " group by HMAINOP_N, hmainop_name";
+                        System.out.println("op refer หัก เดี่ยว");
+
+                    }
+                    System.out.println("sql====>>" + sql);
+                    break;
+                case 11: // oprefer deduct หัก เครือ
+                    if (report.getReportType() == 0) {
+
+                        sql = "select PID,HN,HCODE,HNAME,FNAME||' '||LNAME FLNAME,HCODE ||':'||HNAME HCNNAME,";
+                        sql += " to_char(dateopd,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI') as dateopdTh,";
+                        sql += " dateopd, pdxcode, ";
+                        sql += " chrg_hc, chrg_197, chrg_drug, chrg_other, chrg_total,";
+                        sql += " paid_hc, paid_197, paid_drug, paid_other, paid_total, ";
+                        sql += " deduct_ophc, deduct_oprf, deduct_hmain, deduct_total, deduct_hmain deduct_hmain_final,";
+                        sql += " remark,";
+                        sql += " is_single, stmp";
+                        sql += " from RPT_OPBKK_OPREFER refer WHERE 1=1";
+
+                        sql += " AND is_single = 0 ";
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HMAINOP_N = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+//                        //sql += " AND rownum < 100";
+
+                    } else {
+
+                        sql = "select HMAINOP_N, hmainop_name,";
+                        sql += " count(case when approved='5' THEN 5 end)pid_normal_count,";
+                        sql += " count(case when approved='8' THEN 8 end)pid_appeal_count,";
+                        sql += " count(*)pid_normal_appeal_total,";
+                        sql += " sum(chrg_hc)sum_chrg_hc, sum(chrg_197)sum_chrg_197, sum(chrg_drug)sum_chrg_drug, sum(chrg_other)sum_chrg_other, sum(chrg_total)sum_chrg_total,";
+                        //sql += " sum(paid_hc), sum(paid_197), sum(paid_drug), sum(paid_other), sum(paid_total) ";
+                        sql += " sum(deduct_ophc)sum_deduct_ophc, sum(deduct_oprf)sum_deduct_oprf, sum(deduct_hmain)sum_deduct_hmain, sum(deduct_total)sum_deduct_total, sum(deduct_hmain) deduct_hmain_final";
+                        sql += " from RPT_OPBKK_OPREFER refer";
+                        sql += " where 1=1";
+                        sql += " AND is_single=0  ";
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {  //sql += " AND stmp='2014011";
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+                        sql += " group by HMAINOP_N, hmainop_name";
+                        System.out.println("op refer หัก เครือ");
+                    }
+                    System.out.println("sql====>>" + sql);
+                    break;
+                case 12: // refer จ่ายเดี่ยว 
+                    if (report.getReportType() == 0) {
+
+                        sql = " select PID,HN, hmainop_n, hmainop_name,FNAME||' '||LNAME FLNAME,HNAME, dateopd, pdxcode, ";
+                        sql += " to_char(dateopd,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI') as dateopdTh,";
+                        sql += " chrg_hc, chrg_197, chrg_drug, chrg_other, chrg_total,";
+                        sql += " paid_hc, paid_197, paid_drug, paid_other, paid_total, ";
+                        //sql += " --deduct_ophc, deduct_oprf, deduct_hmain, deduct_total, deduct_hmain deduct_hmain_final,";
+                        sql += " remark,";
+                        sql += " is_single, stmp";
+                        sql += " from RPT_OPBKK_OPREFER refer WHERE 1=1";
+
+                        sql += " AND is_single = 1 ";
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+                        //sql += " AND rownum < 100";
+                    } else {
+
+                        sql = "select HCODE, hname,";
+                        sql += " count(case when approved='5' THEN 5 end)pid_normal_count,";
+                        sql += " count(case when approved='8' THEN 8 end)pid_appeal_count,";
+                        sql += " count(*)pid_normal_appeal_total,";
+                        sql += " sum(chrg_hc) sum_chrg_hc, sum(chrg_197) sum_chrg_197, sum(chrg_drug) sum_chrg_drug, sum(chrg_other) sum_chrg_other, sum(chrg_total)sum_chrg_total,";
+                        sql += " sum(paid_hc) sum_paid_hc, sum(paid_197) sum_paid_197, sum(paid_drug) sum_paid_drug, sum(paid_other) sum_paid_other, sum(paid_total) sum_paid_total,sum(paid_total) sum_paid_final";
+                        // sql += " --sum(deduct_ophc)sum_deduct_ophc, sum(deduct_oprf)sum_deduct_oprf, sum(deduct_hmain)sum_deduct_hmain, sum(deduct_total)sum_deduct_total, sum(deduct_hmain) deduct_hmain_final";
+                        sql += " from RPT_OPBKK_OPREFER refer";
+                        sql += " where 1=1";
+                        sql += " and is_single=1  ";
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) { // sql += " and stmp='2014011'";
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+                        sql += " group by HCODE, hname";
+                        System.out.println("op refer จ่าย เดี่ยว");
+                    }
+                    System.out.println("sql====>>" + sql);
+                    break;
+                case 13: // refer จ่าย เครือ
+                    if (report.getReportType() == 0) {
+
+                        sql = " select PID,HN, hmainop_n, hmainop_name,FNAME||' '||LNAME FLNAME,HNAME, dateopd, pdxcode, ";
+                        sql += " to_char(dateopd,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI') as dateopdTh,";
+                        sql += " chrg_hc, chrg_197, chrg_drug, chrg_other, chrg_total,";
+                        sql += " paid_hc, paid_197, paid_drug, paid_other, paid_total, ";
+                        //sql += " --deduct_ophc, deduct_oprf, deduct_hmain, deduct_total, deduct_hmain deduct_hmain_final,";
+                        sql += " remark,";
+                        sql += " is_single, stmp";
+                        sql += " from RPT_OPBKK_OPREFER refer WHERE 1=1";
+
+                        sql += " AND is_single = 0 ";
+
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+                        //sql += " AND rownum < 100";
+                    } else {
+
+                        sql = "select HCODE, hname,";
+                        sql += " count(case when approved='5' THEN 5 end)pid_normal_count,";
+                        sql += " count(case when approved='8' THEN 8 end)pid_appeal_count,";
+                        sql += " count(*)pid_normal_appeal_total,";
+                        sql += " sum(chrg_hc) sum_chrg_hc, sum(chrg_197)sum_chrg_197, sum(chrg_drug)sum_chrg_drug, sum(chrg_other)sum_chrg_other, sum(chrg_total)sum_chrg_total,";
+                        sql += " sum(paid_hc) sum_paid_hc, sum(paid_197) sum_paid_197, sum(paid_drug) sum_paid_drug, sum(paid_other) sum_paid_other, sum(paid_total) sum_paid_total, sum(paid_total) sum_paid_final";
+                        //sql += " --sum(deduct_ophc)sum_deduct_ophc, sum(deduct_oprf)sum_deduct_oprf, sum(deduct_hmain)sum_deduct_hmain, sum(deduct_total)sum_deduct_total, sum(deduct_hmain) deduct_hmain_final";
+                        sql += " from RPT_OPBKK_OPREFER refer";
+                        sql += " where 1=1";
+                        sql += " and is_single=0  "; // เมื่อ is_single มีค่า ให้เปลี่ยน เป็น is_single = 0
+
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) { // sql += " and stmp='2014011'";
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                        }
+                        sql += " group by HCODE, hname";
+                        System.out.println("op refer จ่าย เครือ");
+                    }
+                    System.out.println("sql====>>" + sql);
+                    break;
+                case 14: //opRefer AE เครือ
+                    if (report.getReportType() == 0) {
+                    } else {
+                    }
+                    System.out.println("sql====>>" + sql);
+                    break;
+                case 15: //OP 197
+                    if (report.getReportType() == 0) {
+                    } else {
+                    }
+                    System.out.println("sql====>>" + sql);
+                    break;
+                case 16: //OP Clearing house Payment GetByHCode [special case] 1 file 2 sheet (sheet 1)
+                    if (report.getReportType() == 0) {
+                        sql = " select pid,hn,pname,sex,age,";
+                        sql += " to_char(a.dateopd,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI') as dateopd,dateopd as dateopd2,";
+                        sql += " hmain||': '||hmainname as hmain,paid_model,pdxcode,";
+                        sql += " cha21,cha31,cha51,cha61,cha71,cha81,cha91,chaa1,chab1,chac1,chad1,chae1,chah1,chaj1,chatotal,reimburse";
+                        sql += " from RPT_OPBKK_TYPE6 a where 1=1";
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + "-" + report.getNo() + "'";
+                        }
+                        sql += " order by dateopd2";
+                    } else {
+                        sql = " select hcode,hcodename,count(distinct pid) npid,count(distinct txid) nvisit,sum(chatotal) charge,sum(reimburse) reimburse,remark";
+                        sql += " from RPT_OPBKK_TYPE6  WHERE 1=1";
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + "-" + report.getNo() + "'";
+                        }
+                        sql += " group by hcode,hcodename,remark";
+                    }
+                    System.out.println("sql====>>" + sql);
+                    break;
+                case 0: //OP OpClearin house Payment GetHCodeByHname [special case] 1 file 2 sheet (sheet 2)
+                    if (report.getReportType() == 0) {
+                        sql = " select hmain,hmainname,count(distinct pid) npid,count(distinct txid) nvisit,sum(chatotal) charge,sum(reimburse) reimburse";
+                        sql += " from RPT_OPBKK_TYPE6 WHERE 1=1";
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + "-" + report.getNo() + "'";
+                        }
+                        sql += " group by hmain,hmainname";
+                    } else {
+                    }
+                    System.out.println("sql====>>" + sql);
+                    break;
+                case 17: //OP Clearing house Deduct GetByHCode [special case] 1 file 2 sheet (sheet 1)
+                    if (report.getReportType() == 0) {
+                        sql = " select pid,hn,pname,sex,age,";
+                        sql += " to_char(a.dateopd,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI') as dateopd,dateopd as dateopd2,";
+                        sql += " hcode||': '||hcodename as hcode,paid_model,pdxcode,";
+                        sql += " cha21,cha31,cha51,cha61,cha71,cha81,cha91,chaa1,chab1,chac1,chad1,chae1,chah1,chaj1,chatotal,reimburse";
+                        sql += " from RPT_OPBKK_TYPE6 a where 1=1";
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HMAIN = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + "-" + report.getNo() + "'";
+                        }
+                        sql += " order by dateopd2";
+                    } else {
+                        sql = " select hmain,hmainname,count(distinct pid) npid,count(distinct txid) nvisit,sum(chatotal) charge,sum(reimburse) reimburse,remark";
+                        sql += " from RPT_OPBKK_TYPE6 WHERE 1=1";
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + "-" + report.getNo() + "'";
+                        }
+                        sql += " group by hmain,hmainname,remark";
+                    }
+                    System.out.println("sql====>>" + sql);
+                    break;
+                case 99: //OP OpClearin Deduct house GetHCodeByHname [special case] 1 file 2 sheet (sheet 2)
+                    if (report.getReportType() == 0) {
+                        sql = " select hcode,hcodename,count(distinct pid) npid,count(distinct txid) nvisit,sum(chatotal) charge,sum(reimburse) reimburse";
+                        sql += " from RPT_OPBKK_TYPE6 WHERE 1=1";
+                        if (report.getServiceCode() != null) {
+                            sql += " AND HMAIN = '" + report.getServiceCode() + "'";
+                        }
+                        if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                            sql += " AND STMP = '" + report.getYear() + report.getMonth() + "-" + report.getNo() + "'";
+                        }
+                        sql += " group by hcode,hcodename";
+                    } else {
+                    }
+                    System.out.println("sql====>>" + sql);
+                    break;
+            }
+
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+
+            return rs;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<HospitalService> getHospitalService(OppReport report) throws SQLException {
+        String sql = null;
+        ResultSet rs = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = getConOracle();
+            System.out.println("report.getReportTypeId()===>>" + report.getReportTypeId());
+            switch (report.getReportTypeId()) {
+                case 1:
+                    sql = "SELECT DISTINCT(HMAINOP_N) AS HCODE,HMAINOP_NAME AS HNAME FROM rpt_opbkk_type5 WHERE 1=1";
+
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HMAINOP_N = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+
+                    break;
+                case 2:
+                    sql = "SELECT DISTINCT(HCODE) AS HCODE,HNAME FROM RPT_OPBKK_OPAE74 WHERE 1=1";
+
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getMonth() != "" && report.getYear() != "") {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+                    break;
+                case 3:
+                    sql = "SELECT DISTINCT(HCODE) AS HCODE,HNAME FROM RPT_OPBKK_OPAE74 WHERE 1=1";
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+
+                    break;
+                case 4:
+                    sql = "";
+                    break;
+                case 5:
+                    sql = " SELECT distinct(HCODE),HNAME FROM RPT_OPBKK_OPAE74 WHERE case_name = 'OP พิการ'";
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + report.getNo() + "'";
+                    }
+                    break;
+                case 6:
+                    sql = "SELECT distinct(HCODE),HNAME FROM RPT_OPBKK_OPAE74 WHERE 1=1 ";
+
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HCODE = '" + report.getServiceCode() + "' ";
+                    }
+                    if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+                    sql += " AND ITEM_DESCR_N = 'EQ' AND PROVINCE_ID = '1000'";
+                    break;
+                case 7:
+                    sql = "SELECT distinct(HCODE),HNAME FROM RPT_OPBKK_OPAE74 WHERE 1=1 ";
+
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HCODE = '" + report.getServiceCode() + "' ";
+                    }
+                    if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+                    sql += " AND ITEM_DESCR_N = 'EQ' AND PROVINCE_ID <> '1000'";
+                    break;
+                case 8:
+                    sql = "SELECT distinct(HCODE),HNAME FROM RPT_OPBKK_RFCHARGE WHERE 1=1 ";
+
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getNo() != null && report.getMonth() != "" && report.getYear() != "") {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+                    break;
+                case 9:
+                    sql = "SELECT DISTINCT(HCODE) AS HCODE,HNAME  FROM RPT_OPBKK_INDV WHERE 1=1";
+
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                        sql += " AND INDV_STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+
+                    break;
+                case 10:    // Refer หัก dedug  เดี่ยว
+                    sql = "SELECT DISTINCT(HMAINOP_N),HMAINOP_NAME  FROM RPT_OPBKK_OPREFER WHERE 1=1";
+                    sql += " AND is_single = 1 ";
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HMAINOP_N = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+
+                    break;
+                case 11: // refer หัก dedug เครื่อ
+                    sql = "SELECT DISTINCT(HMAINOP_N),HMAINOP_NAME  FROM RPT_OPBKK_OPREFER WHERE 1=1";
+                    sql += " AND is_single = 0 ";
+
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HMAINOP_N = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+
+                    break;
+                case 12: // refer จ่าย เดี่ยว
+                    sql = "SELECT DISTINCT(HCODE),HNAME FROM rpt_opbkk_oprefer WHERE 1=1";
+                    sql += " AND is_single = 1 ";
+
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+                    System.out.println("sql distint case 12==>>" + sql);
+                    break;
+                case 13: // refer จ่าย เครือ
+                    sql = "SELECT DISTINCT(HCODE),HNAME FROM rpt_opbkk_oprefer WHERE 1=1";
+                    sql += " AND is_single = 0 ";
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + report.getNo() + "'";
+                    }
+
+                    break;
+                case 14: // OPrefer Pk
+
+                    break;
+                case 15: // OP 197
+
+                    break;
+                case 16: // OP clearing house payment
+                    sql = " select DISTINCT(HCODE),HCODENAME AS HNAME,STMP,REMARK";
+                    sql += " from RPT_OPBKK_TYPE6 a where 1=1";
+                    if (report.getServiceCode() != null) {
+                        sql += " AND HCODE = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + "-" + report.getNo() + "'";
+                    }
+                    sql += " order by HCODE";
+
+                    break;
+                case 17: // OP clearing house  deduct
+                    sql = " select DISTINCT(hmain),hmainname,STMP,REMARK";
+                    sql += " from RPT_OPBKK_TYPE6 a where 1=1";
+                    if (report.getServiceCode() != null) {
+                        sql += " AND hmain = '" + report.getServiceCode() + "'";
+                    }
+                    if (report.getMonth() != "" && report.getYear() != "" && report.getNo() != null) {
+                        sql += " AND STMP = '" + report.getYear() + report.getMonth() + "-" + report.getNo() + "'";
+                    }
+                    sql += " order by hmain";
+
+                    break;
+            }
+
+            System.out.println("sql distint==>>" + sql);
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+
+            List<HospitalService> listHospital = new ArrayList<HospitalService>();
+
+            while (rs.next()) {
+                HospitalService service = new HospitalService();
+                switch (report.getReportTypeId()) {
+                    case 10:
+                        service.setHosCode(rs.getString("HMAINOP_N"));
+                        service.setHosName(rs.getString("HMAINOP_NAME"));
+                        break;
+                    case 11:
+                        service.setHosCode(rs.getString("HMAINOP_N"));
+                        service.setHosName(rs.getString("HMAINOP_NAME"));
+                        break;
+                    case 16:
+                        service.setHosCode(rs.getString("HCODE"));
+                        service.setHosName(rs.getString("HNAME"));
+                        service.setStmp(rs.getString("STMP"));
+                        service.setRemark(rs.getString("REMARK"));
+                        break;
+                    case 17:
+                        service.setHosHmainCode(rs.getString("hmain"));
+                        service.setHosHmainName(rs.getString("hmainname"));
+                        service.setStmp(rs.getString("STMP"));
+                        service.setRemark(rs.getString("REMARK"));
+                        break;
+                    default:
+                        service.setHosCode(rs.getString("HCODE"));
+                        service.setHosName(rs.getString("HNAME"));
+                        break;
+                }
+
+                listHospital.add(service);
+            }
+            conn.close();
+            return listHospital;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public List<Stmp> getStmpDistinct(String tbName, String fieldName) throws SQLException {
+        List<Stmp> listStmp = new ArrayList<Stmp>();
+        PreparedStatement pstm = null;
+        ResultSet rs = null;
+        try {
+            conn = getConOracle();
+            StringBuilder sb = new StringBuilder();
+
+            sb.append(" SELECT ");
+            sb.append(" DISTINCT(").append(fieldName).append(") AS stmp ");
+            sb.append(" FROM ");
+            sb.append(tbName);
+            sb.append(" WHERE stmp IS NOT NULL");
+            sb.append(" ORDER BY '").append(fieldName).append("'");
+
+            //System.out.println("sql===>>>" + sb.toString());
+            pstm = this.conn.prepareStatement(sb.toString());
+
+            rs = pstm.executeQuery();
+            while (rs.next()) {
+                Stmp stmp = new Stmp();
+                // System.out.println("rs.getString(\"stmp\")"+rs.getString("stmp"));
+                String[] arrStmp = function.subStringStmp(rs.getString("stmp"));
+                stmp.setStmp(rs.getString("stmp"));
+                //System.out.println("stmp===>>" + rs.getString("stmp"));
+                stmp.setStmpY(arrStmp[0]);
+                stmp.setStmpM(arrStmp[1]);
+                stmp.setStmpN(arrStmp[2]);
+                stmp.setStmpYM(arrStmp[0] + arrStmp[1]);
+                listStmp.add(stmp);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+//            if (conn != null) {
+//                this.closeConnection();
+//            }
+        }
+        return listStmp;
+    }
+
+    /*
+     *  2 Method ข้างล่าง ใช้กับ 
+     10.1.0.10
+     wel2bkk
+     oracle.jdbc.driver.OracleDriver
+     1521
+     bkkweb
+     bew9ibkk
+     */
+    public List<String> getGroupHCode() {
+        StringBuilder sb = null;
+        PreparedStatement psmt = null;
+        ResultSet rs = null;
+        List<String> hCodes = new ArrayList<String>();
+        try {
+            sb = new StringBuilder("SELECT ");
+            sb.append(" DISTINCT(HCODE) AS hCodeGroup from INDIVIDUAL_RECORD_DETAIL_E11_");
+
+            System.out.println("sql==>>" + sb.toString());
+            psmt = conn.prepareStatement(sb.toString());
+            rs = psmt.executeQuery();
+
+            while (rs.next()) {
+                hCodes.add(rs.getString("hCodeGroup"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return hCodes;
+    }
+
+    public List<ResultBean> genReportListDataByHCode(String hCode) {
+        StringBuilder sb = null;
+        PreparedStatement psmt = null;
+        ResultSet rs = null;
+        List<ResultBean> listBean = null;
+        try {
+
+            sb = new StringBuilder("SELECT ");
+            sb.append(" DISTINCT(PID) AS PID,FNAME,LNAME from INDIVIDUAL_RECORD_DETAIL_E11_ ");
+            sb.append(" WHERE HCODE = '").append(hCode).append("' ");
+            sb.append(" AND ROWNUM < 31");
+            sb.append(" ORDER BY PID");
+
+            System.out.println("sql==>>" + sb.toString());
+            psmt = conn.prepareStatement(sb.toString());
+            rs = psmt.executeQuery();
+            listBean = new ArrayList<ResultBean>();
+
+            while (rs.next()) {
+                ResultBean bean = new ResultBean();
+                bean.setObject1(rs.getString("PID"));
+                bean.setObject2(rs.getString("FNAME"));
+                bean.setObject3(rs.getString("LNAME"));
+                listBean.add(bean);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listBean;
+    }
+}

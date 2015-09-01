@@ -1,0 +1,348 @@
+package com.claim.dao;
+
+import com.claim.connection.ConnectionDB;
+import com.claim.object.HospitalService;
+import com.claim.object.Obj_type5_detail;
+import com.claim.object.Obj_type5_sum;
+import com.claim.object.OppReport;
+import com.claim.support.Console;
+import com.claim.support.Constants;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class OpType5DAO {
+
+    public Connection conn = null;
+    StringBuilder sql = null;
+    ResultSet rs = null;
+    PreparedStatement pstmt = null;
+
+    private Connection getConOracle() {
+        Connection vConn = null;
+        ConnectionDB connec = new ConnectionDB("True", "", "", "", "", "", "", "1");
+        vConn = connec.getConnectionInf();
+        return vConn;
+    }
+
+    public void closeConnection() {
+        try {
+            if (conn != null) {
+                conn.close();
+                conn = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Connection openConnection() {
+        try {
+            conn = getConOracle();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return conn;
+        }
+    }
+
+    public List<HospitalService> getHospitalService(OppReport report) {
+        List<HospitalService> listHS = null;
+        try {
+            this.openConnection();
+
+            sql = new StringBuilder(" SELECT");
+
+            if (report.getAttribute() == '1') {    //is197=1 จ่ายให้ HMAIN ,  [  กรณี197รายการ ]  
+                sql.append(" DISTINCT(HMAIN),HMAINNAME");
+                sql.append("  from RPT_OPBKK_TYPE5 WHERE 1=1");
+
+                sql.append(" AND is197= 1");
+                if (report.sizeListServiceCode() > 0) {
+                    sql.append("  AND HMAIN in (");
+                    for (HospitalService hospitalService : report.getListServiceCode()) {
+                        sql.append("'").append(hospitalService.getHosCode()).append("',");
+                    }
+                    sql.append(" '')");
+                }
+                if (report.getYearMonth() != "" && report.getNo() != null) {
+                    sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                }
+                if (!report.getBudget_year().equals("")) {
+                    int budgetYear = Integer.parseInt(report.getBudget_year());
+                    int minBudgetYear = (budgetYear - 1);
+                    int maxBudgetYear = budgetYear;
+                    sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                    sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                }
+                sql.append(" ORDER BY HMAIN");
+
+            } else if (report.getAttribute() == '3') {  // is197=3 จ่ายให้ HCODE [  กรณีHighCost ]    
+                sql.append(" DISTINCT(HCODE),HCODENAME");
+                sql.append("  from RPT_OPBKK_TYPE5 WHERE 1=1");
+                sql.append(" AND is197= 3");
+                if (report.sizeListServiceCode() > 0) {
+                    sql.append("  AND HCODE in (");
+                    for (HospitalService hospitalService : report.getListServiceCode()) {
+                        sql.append("'").append(hospitalService.getHosCode()).append("',");
+                    }
+                    sql.append(" '')");
+                }
+                if (report.getYearMonth() != "" && report.getNo() != null) {
+                    sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                }
+                if (!report.getBudget_year().equals("")) {
+                    int budgetYear = Integer.parseInt(report.getBudget_year());
+                    int minBudgetYear = (budgetYear - 1);
+                    int maxBudgetYear = budgetYear;
+                    sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                    sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                }
+                sql.append(" ORDER BY HCODE");
+            } else { //  197+hc for web site claim
+                sql.append(" DISTINCT(HCODE),HCODENAME");
+                sql.append("  from RPT_OPBKK_TYPE5 WHERE 1=1");
+                if (report.sizeListServiceCode() > 0) {
+                    sql.append("  AND HCODE in (");
+                    for (HospitalService hospitalService : report.getListServiceCode()) {
+                        sql.append("'").append(hospitalService.getHosCode()).append("',");
+                    }
+                    sql.append(" '')");
+                }
+                if (!report.getBudget_year().equals("")) {
+                    int budgetYear = Integer.parseInt(report.getBudget_year());
+                    int minBudgetYear = (budgetYear - 1);
+                    int maxBudgetYear = budgetYear;
+                    sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                    sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                }
+                if (report.getYearMonth() != "" && report.getNo() != null) {
+                    sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                }
+                sql.append(" ORDER BY HCODE");
+            }
+
+            System.out.println("sql.toString()===>>" + sql.toString());
+            pstmt = conn.prepareStatement(sql.toString());
+            rs = pstmt.executeQuery();
+
+            listHS = new ArrayList<HospitalService>();
+
+            while (rs.next()) {
+                HospitalService service = new HospitalService();
+                if (report.getAttribute() == '3') {    // is197=3 จ่ายให้ HCODE [  กรณีHighCost ]    
+                    service.setHosCode(rs.getString("HCODE"));
+                    service.setHosName(rs.getString("HCODENAME"));
+                } else if (report.getAttribute() == '1') {    //is197=1 จ่ายให้ HMAIN ,  [  กรณี197รายการ ]  
+                    service.setHosHmainCode(rs.getString("HMAIN"));
+                    service.setHosHmainName(rs.getString("HMAINNAME"));
+                }
+                listHS.add(service);
+            }
+
+            return listHS;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            this.closeConnection();
+            return listHS;
+        }
+    }
+
+    public List<Obj_type5_detail> genReportType5_detail(OppReport report) { //     
+        List<Obj_type5_detail> listType5 = null;
+        Obj_type5_detail objtype5 = null;
+        try {
+            this.openConnection();
+            sql = new StringBuilder(" select");
+            sql.append(" pname,pid,hn,dateopd");
+            if (report.getAttribute() == '3') {  // is197=3 จ่ายให้ HCODE [  กรณีHighCost ]          
+                sql.append(" ,hcode||': '||hcodename hcode");
+            } else if (report.getAttribute() == '1') {  //is197=1 จ่ายให้ HMAIN ,  [  กรณี197รายการ ]  
+                sql.append(" ,hmain||': '||hmainname hmain");
+            }
+            sql.append(" ,to_char(dateopd,'dd monyyyy','NLS_CALENDAR=''Thai Buddha'' NLS_DATE_LANGUAGE=THAI')dateopd_thai_buddha");
+            sql.append(" ,item_code||': '||ITEM_DESC item_code,qty");
+            sql.append(" ,nvl(stdprice,0)stdprice,nvl(price_total,0)price_total,nvl(TOTALREIMBURSE,0)TOTALREIMBURSE");
+            sql.append(" ,txid");  // modifide by 2014-08-04
+            sql.append(" from rpt_opbkk_type5");
+            sql.append(" where 1=1");
+            if (!report.getWeb_type5()) { // false = for genaral use
+                if (report.getAttribute() == '1' || report.getAttribute() == '3') {
+                    sql.append(" AND is197=").append(report.getAttribute());  //  is197=1 จ่ายให้ HMAIN , is197=3 จ่ายให้ HCODE
+                }
+            }
+            if (report.getServiceCode() != null) {
+                sql.append(" AND HMAIN = '").append(report.getServiceCode()).append("'");
+            }
+            if (report.getYearMonth() != "" && report.getNo() != null) {
+                sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+            }
+            if (!report.getBudget_year().equals("")) {
+                int budgetYear = Integer.parseInt(report.getBudget_year());
+                int minBudgetYear = (budgetYear - 1);
+                int maxBudgetYear = budgetYear;
+                sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+            }
+            
+            System.out.println("sql ::==" + sql.toString());
+            if (Constants.IS_SHOW_QUERY) {
+                Console.LOG(" QUERY ::==" + sql.toString(), 1);
+            }
+            
+            
+            pstmt = conn.prepareStatement(sql.toString());
+            rs = pstmt.executeQuery();
+            listType5 = new ArrayList<Obj_type5_detail>();
+            while (rs.next()) {
+                objtype5 = new Obj_type5_detail();
+                objtype5.setDate_opd(rs.getString("dateopd"));
+                objtype5.setDate_th(rs.getString("dateopd_thai_buddha"));
+
+                if (report.getAttribute() == '3') {  // is197=3 จ่ายให้ HCODE
+                    objtype5.setHcode(rs.getString("hcode"));
+                } else if (report.getAttribute() == '1') {  //is197=1 จ่ายให้ HMAIN ,
+                    objtype5.setHmain(rs.getString("hmain"));
+                }
+
+                objtype5.setHn(rs.getString("hn"));
+                objtype5.setItem_code(rs.getString("item_code"));
+                objtype5.setP_name(rs.getString("pname"));
+                objtype5.setPid(rs.getString("pid"));
+                objtype5.setPrice_total(rs.getDouble("price_total"));
+                objtype5.setStd_price(rs.getDouble("stdprice"));
+                objtype5.setQty(rs.getInt("qty"));
+                objtype5.setTotal_reimburse(rs.getDouble("totalreimburse")); //TOTALREIMBURSE
+                objtype5.setTxid(rs.getString("txid"));
+                listType5.add(objtype5);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        } finally {
+
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(OpType5DAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return listType5;
+    }
+
+    public List<Obj_type5_sum> genReportType5_sum(OppReport report) { //     
+        List<Obj_type5_sum> listType5 = null;
+        Obj_type5_sum objtype5 = null;
+        try {
+            this.openConnection();
+            /*1 then 'กรณี197รายการ' 
+             3 then 'กรณีHighCost'  */
+            sql = new StringBuilder(" select");
+
+            if (report.getAttribute() == '1') {   //is197=1 จ่ายให้ HMAIN , [  กรณี197รายการ ]
+                sql.append(" row_number() OVER (ORDER BY hmain) no,hmain,hmainname,count(distinct pid)count_pid,count(distinct txid)count_visit,sum(qty)sum_item");
+                sql.append(" ,sum(nvl(price_total,0))sum_price_total");
+                sql.append(" ,sum(nvl(TOTALREIMBURSE-stdprice,0))sum_stdprice");
+                sql.append(" ,sum(nvl(TOTALREIMBURSE,0))sum_TOTALREIMBURSE");
+                sql.append(" from rpt_opbkk_type5");
+                sql.append(" where 1=1");
+                sql.append(" and is197=1");
+                if (report.getYearMonth() != "" && report.getNo() != null) {
+                    sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                }
+                if (!report.getBudget_year().equals("")) {
+                    int budgetYear = Integer.parseInt(report.getBudget_year());
+                    int minBudgetYear = (budgetYear - 1);
+                    int maxBudgetYear = budgetYear;
+                    sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                    sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                }
+                //  --and hmain
+                sql.append(" group by hmain,hmainname");
+            } else if (report.getAttribute() == '3') {  // is197=3 จ่ายให้ HCODE      [  กรณีHighCost ]             
+                sql.append(" row_number() OVER (ORDER BY hcode) no,hcode,hcodename");
+                sql.append(" ,count(distinct pid)count_pid,count(distinct txid)count_visit,sum(qty)sum_item");
+                sql.append(" ,sum(nvl(price_total,0))sum_price_total");
+                sql.append(" ,sum(nvl(TOTALREIMBURSE-stdprice,0))sum_stdprice");
+                sql.append(" ,sum(nvl(TOTALREIMBURSE,0))sum_TOTALREIMBURSE");
+                sql.append(" from rpt_opbkk_type5");
+                sql.append(" where 1=1");
+                sql.append(" and is197=3");
+                if (report.getYearMonth() != "" && report.getNo() != null) {
+                    sql.append(" AND STMP = '").append(report.getYearMonth()).append("-").append(report.getNo()).append("'");
+                }
+                if (!report.getBudget_year().equals("")) {
+                    int budgetYear = Integer.parseInt(report.getBudget_year());
+                    int minBudgetYear = (budgetYear - 1);
+                    int maxBudgetYear = budgetYear;
+                    sql.append(" and trunc(dateopd) between to_date('0110").append(minBudgetYear).append("','ddmmyyyy')");
+                    sql.append(" and to_date('3009").append(maxBudgetYear).append("','ddmmyyyy')");
+                }
+                //--and hmain
+                sql.append(" group by hcode,hcodename");
+            }
+            System.out.println(" sql ::==" + sql.toString());
+            if (Constants.IS_SHOW_QUERY) {
+                Console.LOG(" QUERY ::==" + sql.toString(), 1);
+            }
+
+            pstmt = conn.prepareStatement(sql.toString());
+            rs = pstmt.executeQuery();
+            listType5 = new ArrayList<Obj_type5_sum>();
+            while (rs.next()) {
+                objtype5 = new Obj_type5_sum();
+                objtype5.setCount_pid(rs.getInt("count_pid"));
+                objtype5.setCount_visit(rs.getInt("count_visit"));
+
+                if (report.getAttribute() == '3') {  // is197=3 จ่ายให้ HCODE
+                    objtype5.setHcode(rs.getString("hcode"));
+                    objtype5.setHcode_name(rs.getString("hcodename"));
+                } else if (report.getAttribute() == '1') {  //is197=1 จ่ายให้ HMAIN ,
+                    objtype5.setHmain(rs.getString("hmain"));
+                    objtype5.setHmain_name(rs.getString("hmainname"));
+                }
+
+                objtype5.setSum_item(rs.getDouble("sum_item"));
+                objtype5.setSum_price_total(rs.getDouble("sum_price_total"));
+                objtype5.setSum_stdprice(rs.getDouble("sum_stdprice"));
+                objtype5.setSum_total_reimburse(rs.getDouble("sum_totalreimburse"));
+                listType5.add(objtype5);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(OpType5DAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return listType5;
+    }
+}

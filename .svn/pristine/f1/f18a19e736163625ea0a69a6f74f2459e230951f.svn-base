@@ -1,0 +1,346 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.controller;
+
+import com.claim.connection.DBManage;
+import com.claim.connection.ResourcesProperties;
+import com.claim.dao.FileTransferDao;
+import com.claim.object.FtpProperties;
+import com.claim.object.ObjFileTransfer;
+import com.claim.support.Console;
+import com.claim.support.FtpUtil;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPReply;
+
+/**
+ *
+ * @author POOL_LAPTOP
+ */
+public class FileTransferController {
+
+    private String FTP_SERVER = null;
+    private int FTP_PORT;
+    private String FTP_USER = null;
+    private String FTP_PASS = null;
+    private String FTP_REMOTE_DIRECTORY = null;
+    private String FTP_REMOTE_HOME = null;
+
+    static Properties props;
+
+    public FileTransferController() {
+        FtpProperties properties = new ResourcesProperties().loadFTPProperties();
+        System.out.println("properties ::==" + properties);
+        FTP_SERVER = properties.getFtp_server();
+        FTP_PORT = Integer.parseInt(properties.getFtp_port());
+        FTP_USER = properties.getFtp_username();
+        FTP_PASS = properties.getFtp_password();
+        FTP_REMOTE_DIRECTORY = properties.getFtp_remote_directory();
+    }
+
+    public static void main(String[] args) {
+        FileTransferController ftc = new FileTransferController();
+        //ftc.uploadSingleFileWithFTP(LOCAL_FILE);
+        //ftc.uploadMutiFiles(LOCAL_DIRECTORY);
+        ftc.readFilesFromServer(ftc.FTP_REMOTE_DIRECTORY);
+    }
+
+    /*
+     http://www.codejava.net/java-se/networking/ftp/java-ftp-file-upload-tutorial-and-example
+     */
+    public void uploadSingleFileWithFTP(String direcPath) {
+        FTPClient ftpClient = new FTPClient();
+        InputStream inputStream = null;
+        try {
+
+            ftpClient.connect(FTP_SERVER, FTP_PORT);
+            ftpClient.login(FTP_USER, FTP_PASS);
+            ftpClient.enterLocalPassiveMode();
+
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+
+            // APPROACH #1: uploads first file using an InputStream
+//            File firstLocalFile = new File(direcPath);  //"D:/Test/Projects.zip");
+//
+//            String firstRemoteFile = "Projects.zip";
+//            InputStream inputStream = new FileInputStream(firstLocalFile);
+//            
+//            System.out.println("Start uploading first file");
+//            boolean done = ftpClient.storeFile(firstRemoteFile, inputStream);
+//            inputStream.close();
+//            if (done) {
+//                System.out.println("The first file is uploaded successfully.");
+//            }
+            // APPROACH #2: uploads second file using an OutputStream
+            File secondLocalFile = new File(direcPath);
+            String secondRemoteFile = "WorkshopDay2.docx";
+            inputStream = new FileInputStream(secondLocalFile);
+
+            System.out.println("Start uploading second file");
+            OutputStream outputStream = ftpClient.storeFileStream(secondRemoteFile);
+            byte[] bytesIn = new byte[4096];
+            int read = 0;
+
+            while ((read = inputStream.read(bytesIn)) != -1) {
+                outputStream.write(bytesIn, 0, read);
+            }
+            inputStream.close();
+            outputStream.close();
+
+            boolean completed = ftpClient.completePendingCommand();
+            if (completed) {
+                System.out.println("The second file is uploaded successfully.");
+            }
+
+        } catch (IOException ex) {
+            System.out.println("Error: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (ftpClient.isConnected()) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public void readFilesFromServer(String targetDirectory) {
+        FTPClient ftpClient = new FTPClient();
+        try {
+
+            ftpClient.connect(FTP_SERVER, FTP_PORT);
+            ftpClient.login(FTP_USER, FTP_PASS);
+            ftpClient.enterLocalPassiveMode();
+
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+
+            //FTP_REMOTE_HOME = ftpClient.printWorkingDirectory();
+            
+
+            FTPFile[] ftpFiles = ftpClient.listFiles();
+
+            if (ftpFiles != null && ftpFiles.length > 0) {
+                //loop thru files
+                for (FTPFile file : ftpFiles) {
+                    if (!file.isFile()) {
+                        continue;
+                    }
+                    System.out.println("File is " + file.getName());
+
+                    //get output stream
+                    OutputStream output;
+                    //output = new FileOutputStream(FTP_REMOTE_HOME + "/" + file.getName());
+                    output = new FileOutputStream(file.getName());
+                    //get the file from the remote system
+                    ftpClient.retrieveFile(file.getName(), output);
+                    //close output stream
+                    output.close();
+
+                    //delete the file
+                    //ftpClient.deleteFile(file.getName());
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (ftpClient != null) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(FileTransferController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public List<ObjFileTransfer> getFileTransfer(String reportType) {
+        Connection connection = null;
+        List<ObjFileTransfer> listFtps = new ArrayList<>();
+        try {
+            connection = new DBManage().open();
+            FileTransferDao ftpDao = new FileTransferDao();
+            ftpDao.setConnection(connection);
+
+            listFtps = ftpDao.readFileList(reportType);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(InitProgramController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return listFtps;
+    }
+
+    public boolean uploadMutiFiles(ObjFileTransfer ftpObj) throws Exception {
+        FTPClient ftpClient = new FTPClient();
+        int replyCode;
+        boolean completed = false;
+        try {
+
+            ftpClient.connect(FTP_SERVER, FTP_PORT);
+
+            replyCode = ftpClient.getReplyCode();
+
+            if (!FTPReply.isPositiveCompletion(replyCode)) {
+                ftpClient.disconnect();
+                Console.LOG("Exception in connecting to FTP Serve ", 0);
+                throw new Exception("Exception in connecting to FTP Server");
+            }
+
+            ftpClient.login(FTP_USER, FTP_PASS);
+            ftpClient.enterLocalPassiveMode();
+
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            //FTP_REMOTE_HOME = ftpClient.printWorkingDirectory();
+
+            // APPROACH #2: uploads second file using an OutputStream
+            File files = new File(ftpObj.getFtp_directory_path());
+
+            String workingDirectoryReportType = FTP_REMOTE_DIRECTORY + File.separator + ftpObj.getFtp_report_type();
+            FtpUtil.ftpCreateDirectoryTree(ftpClient, workingDirectoryReportType);
+
+            String workingDirectoryStmp = workingDirectoryReportType + File.separator + ftpObj.getFtp_stmp();
+            FtpUtil.ftpCreateDirectoryTree(ftpClient, workingDirectoryStmp);
+
+            for (File file : files.listFiles()) {
+                if (file.isFile()) {
+                    System.out.println("file ::" + file.getName());
+                    InputStream in = new FileInputStream(file);
+                    ftpClient.changeWorkingDirectory(workingDirectoryStmp);
+                    completed = ftpClient.storeFile(file.getName(), in);
+                    in.close();
+                    Console.LOG(" อัพโหลดไฟล์ " + file.getName() + " เรียบร้อย", 1);
+                }
+            }
+            Console.LOG(" กำลังตรวจสอบ... ", 1);
+
+            //completed = ftpClient.completePendingCommand();
+            completed = true;
+            ftpClient.disconnect();
+
+        } catch (IOException ex) {
+            System.out.println("Error: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (ftpClient.isConnected()) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return completed;
+    }
+
+    public void uploadMutiFileWithFTP(String targetDirectory) {
+        try {
+
+            //new ftp client
+            FTPClient ftp = new FTPClient();
+            //try to connect
+            ftp.connect(FTP_SERVER);
+            //login to server
+            if (!ftp.login(FTP_USER, FTP_PASS)) {
+                ftp.logout();
+            }
+            int reply = ftp.getReplyCode();
+            //FTPReply stores a set of constants for FTP reply codes. 
+            if (!FTPReply.isPositiveCompletion(reply)) {
+                ftp.disconnect();
+            }
+
+            //enter passive mode
+            ftp.enterLocalPassiveMode();
+            //get system name
+            System.out.println("Remote system is " + ftp.getSystemName());
+            //change current directory
+            //ftp.changeWorkingDirectory("/App/PMIGENV/BACK/Finacle/FC/app/CDCI_LOGS/log/UBSADMIN");
+            ftp.changeWorkingDirectory(targetDirectory);
+            System.out.println("Current directory is " + ftp.printWorkingDirectory());
+
+            //get list of filenames
+            FTPFile[] ftpFiles = ftp.listFiles();
+
+            if (ftpFiles != null && ftpFiles.length > 0) {
+                //loop thru files
+                for (FTPFile file : ftpFiles) {
+                    if (!file.isFile()) {
+                        continue;
+                    }
+                    System.out.println("File is " + file.getName());
+                    //get output stream
+                    OutputStream output;
+                    output = new FileOutputStream(FTP_REMOTE_DIRECTORY + File.separator + file.getName());
+                    //get the file from the remote system
+                    ftp.retrieveFile(file.getName(), output);
+                    //close output stream
+                    output.close();
+
+                    //delete the file
+                    // ftp.deleteFile(file.getName());
+                }
+            }
+
+            ftp.logout();
+            ftp.disconnect();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public int createLogFileTransfer(ObjFileTransfer ftpObj) {
+        Connection connection = null;
+        int exec = 0;
+        try {
+            connection = new DBManage().open();
+            FileTransferDao ftpDao = new FileTransferDao();
+            ftpDao.setConnection(connection);
+
+            exec = ftpDao.createLog(ftpObj);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.commit();
+                    connection.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(InitProgramController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return exec;
+    }
+
+}

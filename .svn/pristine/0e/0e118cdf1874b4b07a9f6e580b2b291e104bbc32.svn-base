@@ -1,0 +1,337 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.controller;
+
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.CellStyle;
+
+/**
+ *
+ * @author Poolsawat.a
+ */
+public class ExcellBaseUtil {
+
+    public static int WIDTH_TXID = 9000; // 10000 = 273 pixel   9000 = 246
+    public static int ROW_LIMIT =  65500;   // limit excell row 65,536 rows by 256 columns
+    public static int COLUMN_LIMIT = 256;
+    private static String FONT_FAMILY = "Tahoma"; //TH SarabunPSK";   //Tahoma
+    private static int FONT_SIZE = 12;
+    private static int FONT_CUSTOM_SIZE = FONT_SIZE+4;
+    private static Short CELL_COLOR = HSSFColor.LIGHT_TURQUOISE.index;
+    public String[] CHAR_ENG = new String[]{"A","B","C","D","E","F","G","H","I","J","K","L","M","N",
+    "O","P","Q","R","S","T","U","V","W","X","Y","Z","AA","AB","AC","AD","AF","AG","AH","AI","AJ","AL","AM","AN","AO","AP","AQ","AR","AS","AT",
+    "AU","AV","AW","AX","AY","AZ"
+    };
+    protected HSSFDataFormat df;
+    protected HSSFWorkbook wb;
+    protected HSSFFont f1;
+    protected HSSFFont f2B;
+    protected HSSFFont f2;
+    protected HSSFFont fhidden;
+    protected HSSFCellStyle leftStyle;
+    protected HSSFCellStyle csHead;
+    protected HSSFCellStyle csHeadTab;
+    protected HSSFCellStyle csNum2;   // double
+    protected HSSFCellStyle csNum3;  // integer
+    protected HSSFCellStyle csNum3R;  // integer
+    protected HSSFCellStyle csNum3L;  // integer
+    protected HSSFCellStyle csNum2B;
+    protected HSSFCellStyle csNum3B;
+    protected HSSFCellStyle csDetailB; // string
+    protected HSSFCellStyle csDetailLeft; // string
+    protected HSSFCellStyle csDetailCenter;
+    protected HSSFCellStyle csDetail2Center;
+    protected HSSFCellStyle csDetail2;
+    protected HSSFCellStyle csNum4;  // integer
+    protected HSSFCellStyle csNum4R;  // integer
+    protected HSSFCellStyle csNum4L;  // integer
+    protected HSSFCellStyle csNum4B;
+    protected HSSFCellStyle csNum4B_R;
+    protected HSSFCellStyle csNumH;
+    protected HSSFCellStyle csDetailPid;
+    
+    protected HSSFCellStyle csNum2Center;
+    
+    protected HSSFCellStyle csDetailtxid;
+    
+    protected void loadStyle(HSSFWorkbook wbClearing) {
+        // style 
+        this.wb = wbClearing;
+
+        df = wb.createDataFormat();
+
+        f1 = wb.createFont();
+        f1.setFontHeightInPoints((short) (FONT_CUSTOM_SIZE));
+        f1.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        f1.setFontName(FONT_FAMILY);
+
+        f2B = wb.createFont();
+        f2B.setFontHeightInPoints((short) FONT_SIZE);
+        f2B.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        f2B.setFontName(FONT_FAMILY);
+
+        f2 = wb.createFont();
+        f2.setFontHeightInPoints((short) FONT_SIZE);
+        f2.setFontName(FONT_FAMILY);
+        
+        fhidden = wb.createFont();
+        fhidden.setFontHeightInPoints((short) FONT_SIZE);
+        fhidden.setFontName(FONT_FAMILY);
+        fhidden.setColor((short)HSSFColor.WHITE.index);
+        
+        leftStyle = wb.createCellStyle();
+        leftStyle.setBorderBottom(CellStyle.BORDER_THIN);
+        leftStyle.setBorderLeft(CellStyle.BORDER_THIN);
+        leftStyle.setBorderRight(CellStyle.BORDER_THIN);
+        leftStyle.setBorderTop(CellStyle.BORDER_THIN);
+
+        csHead = wb.createCellStyle();
+        csHead.setFont(f1);
+        csHead.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csHead.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csHead.setWrapText(true);
+
+        csHeadTab = wb.createCellStyle();
+        csHeadTab.setFont(f1);
+        csHeadTab.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csHeadTab.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csHeadTab.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csHeadTab.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csHeadTab.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csHeadTab.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        csHeadTab.setWrapText(true);
+        csHeadTab.setFillPattern(HSSFCellStyle.FINE_DOTS);
+        csHeadTab.setFillForegroundColor(CELL_COLOR);
+        csHeadTab.setFillBackgroundColor(CELL_COLOR);
+
+        csNum2 = wb.createCellStyle();
+        csNum2.setFont(f2);
+        csNum2.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum2.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum2.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum2.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum2.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        csNum2.setDataFormat(df.getFormat("#,##0.00"));
+
+        csNum3 = wb.createCellStyle();
+        csNum3.setFont(f2);
+        csNum3.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum3.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csNum3.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum3.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum3.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum3.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        
+         csNum3R = wb.createCellStyle();
+        csNum3R.setFont(f2);
+        csNum3R.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum3R.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNum3R.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum3R.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum3R.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum3R.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        
+         csNum3L = wb.createCellStyle();
+        csNum3L.setFont(f2);
+        csNum3L.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum3L.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        csNum3L.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum3L.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum3L.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum3L.setBorderTop(HSSFCellStyle.BORDER_THIN);
+
+        csNum2B = wb.createCellStyle();
+        csNum2B.setFont(f2B);
+        csNum2B.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum2B.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNum2B.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum2B.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum2B.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum2B.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        csNum2B.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNum2B.setDataFormat(df.getFormat("#,##0.00"));
+        csNum2B.setFillPattern(HSSFCellStyle.FINE_DOTS);
+        csNum2B.setFillForegroundColor(CELL_COLOR);
+        csNum2B.setFillBackgroundColor(CELL_COLOR);
+
+        csNum3B = wb.createCellStyle();
+        csNum3B.setFont(f2B);
+        csNum3B.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum3B.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNum3B.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum3B.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum3B.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum3B.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        csNum3B.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNum3B.setDataFormat(df.getFormat("#,##0"));
+        csNum3B.setFillPattern(HSSFCellStyle.FINE_DOTS);
+        csNum3B.setFillForegroundColor(CELL_COLOR);
+        csNum3B.setFillBackgroundColor(CELL_COLOR);
+
+        csDetailB = wb.createCellStyle();
+        csDetailB.setFont(f2B);
+        csDetailB.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csDetailB.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csDetailB.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csDetailB.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csDetailB.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        //csDetail.setWrapText(true);
+
+        csDetailLeft = wb.createCellStyle();
+        csDetailLeft.setFont(f2);
+        csDetailLeft.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csDetailLeft.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        csDetailLeft.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csDetailLeft.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csDetailLeft.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csDetailLeft.setBorderTop(HSSFCellStyle.BORDER_THIN);
+
+        csDetailCenter = wb.createCellStyle();
+        csDetailCenter.setFont(f2);
+        csDetailCenter.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csDetailCenter.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csDetailCenter.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csDetailCenter.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csDetailCenter.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csDetailCenter.setBorderTop(HSSFCellStyle.BORDER_THIN);
+
+        csDetail2Center = wb.createCellStyle();
+        csDetail2Center.setFont(f2);
+        csDetail2Center.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csDetail2Center.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csDetail2Center.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csDetail2Center.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csDetail2Center.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csDetail2Center.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        //csDetail2.setWrapText(true);
+
+        csDetail2 = wb.createCellStyle();
+        csDetail2.setFont(f2);
+        csDetail2.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csDetail2.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csDetail2.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csDetail2.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csDetail2.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        //csDetail2.setWrapText(true);
+
+        csNum4 = wb.createCellStyle();
+        csNum4.setFont(f2);
+        csNum4.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum4.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csNum4.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum4.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum4.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum4.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        csNum4.setDataFormat(df.getFormat("#,##0"));
+        
+        csNum4R = wb.createCellStyle();
+        csNum4R.setFont(f2);
+        csNum4R.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum4R.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNum4R.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum4R.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum4R.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum4R.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        csNum4R.setDataFormat(df.getFormat("#,##0"));
+        
+        csNum4L = wb.createCellStyle();
+        csNum4L.setFont(f2);
+        csNum4L.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum4L.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        csNum4L.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum4L.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum4L.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum4L.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        csNum4L.setDataFormat(df.getFormat("#,##0"));
+
+
+        csNum4B = wb.createCellStyle();
+        csNum4B.setFont(f2B);
+        csNum4B.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum4B.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csNum4B.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum4B.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum4B.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum4B.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        csNum4B.setDataFormat(df.getFormat("#,##0"));
+        csNum4B.setFillPattern(HSSFCellStyle.FINE_DOTS);
+        csNum4B.setFillForegroundColor(CELL_COLOR);
+        csNum4B.setFillBackgroundColor(CELL_COLOR);
+        
+        csNum4B_R = wb.createCellStyle();
+        csNum4B_R.setFont(f2B);
+        csNum4B_R.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum4B_R.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+        csNum4B_R.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum4B_R.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum4B_R.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum4B_R.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        csNum4B_R.setDataFormat(df.getFormat("#,##0"));
+        csNum4B_R.setFillPattern(HSSFCellStyle.FINE_DOTS);
+        csNum4B_R.setFillForegroundColor(CELL_COLOR);
+        csNum4B_R.setFillBackgroundColor(CELL_COLOR);
+
+        csNumH = wb.createCellStyle();
+        csNumH.setFont(f2);
+        csNumH.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNumH.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csNumH.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNumH.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNumH.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNumH.setBorderTop(HSSFCellStyle.BORDER_THIN);
+
+        csDetailPid = wb.createCellStyle();
+        csDetailPid.setFont(f2);
+        csDetailPid.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csDetailPid.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csDetailPid.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csDetailPid.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csDetailPid.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        
+        csNum2Center = wb.createCellStyle();
+        csNum2Center.setFont(f2);
+        csNum2Center.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+        csNum2Center.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        csNum2Center.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csNum2Center.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csNum2Center.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csNum2Center.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        csNum2Center.setDataFormat(df.getFormat("#,##0.00"));
+        
+        csDetailtxid = wb.createCellStyle();
+        csDetailtxid.setFont(fhidden);
+        csDetailtxid.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);                 
+        /*csDetailtxid.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        csDetailtxid.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        csDetailtxid.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        csDetailtxid.setBorderTop(HSSFCellStyle.BORDER_THIN);*/
+    }
+    
+    protected void setFontFamily(String font_name){
+            ExcellBaseUtil.FONT_FAMILY = font_name;
+    }
+    protected void setFontSize(int font_size){
+            ExcellBaseUtil.FONT_SIZE = font_size;
+    }
+    protected void setFontHeaderSize(int font_size){
+            ExcellBaseUtil.FONT_CUSTOM_SIZE = font_size;
+    }
+    protected void setColorCell(Short colorIndex){
+            ExcellBaseUtil.CELL_COLOR = colorIndex;
+    }
+    protected String builderFormulaSum(int indexCell,int rowBegin,int rowEnd){
+        return "SUM("+CHAR_ENG[indexCell]+ String.valueOf(rowBegin) + ":"+CHAR_ENG[indexCell] + (rowEnd) + ")";
+    }
+    protected String builderFormulaSumRound(int indexCell,int rowBegin,int rowEnd,int roundDigit){
+        return "ROUND(SUM("+CHAR_ENG[indexCell]+ String.valueOf(rowBegin) + ":"+CHAR_ENG[indexCell] + (rowEnd) + "),"+String.valueOf(roundDigit)+")";
+    }
+    protected String builderFormularRound(String target,int digit){
+        return "ROUND("+target+", "+String.valueOf(digit)+")";
+    }
+}

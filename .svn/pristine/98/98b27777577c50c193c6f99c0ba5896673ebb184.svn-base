@@ -1,0 +1,77 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.connection;
+
+import com.claim.support.Console;
+import com.claim.support.Constants;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author Poolsawat.a
+ */
+public class DBManage {
+
+    static final String URL_ORACLE = "jdbc:oracle:thin:@";
+    static String URL;
+    static String SERVER;
+    static String PORT;
+    static String DATABASE;
+    static String TYPE_DATABASE;
+    static String USERNAME;
+    static String PASSWORD;
+
+    public DBManage() {
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new FileReader(".\\bin\\database.conf"));
+            SERVER = in.readLine();
+            DATABASE = in.readLine();
+            TYPE_DATABASE = in.readLine();
+            PORT = in.readLine();
+            USERNAME = in.readLine();
+            PASSWORD = in.readLine();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(DBManage.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(DBManage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    public Connection open() throws SQLException {
+        Connection conn = null;
+        try {
+            Class.forName(TYPE_DATABASE);
+            conn = DriverManager.getConnection(URL_ORACLE + SERVER + ":" + PORT + ":" + DATABASE, USERNAME, PASSWORD);
+            if (conn != null) {
+                System.out.println("INFO :: #### CONNECTION SUCCESS ####");
+            } else {
+                System.out.println("INFO :: #### CONNECTION FAIL !!! ####");
+                Console.LOG(Constants.MSG_CONNECTION_FAIL, 0);
+            }
+            conn.setAutoCommit(false);
+        } catch (ClassNotFoundException | SQLException ex) {
+            Console.LOG(Constants.MSG_CONNECTION_FAIL, 0);
+            Console.LOG(ex.getMessage(), 0);
+            Logger.getLogger(DBManage.class.getName()).log(Level.SEVERE, null, ex);            
+        } finally {
+            return conn;
+        }
+    }
+
+    public static void main(String[] args) {
+
+    }
+}

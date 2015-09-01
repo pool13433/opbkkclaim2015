@@ -1,0 +1,54 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.constants;
+
+/**
+ *
+ * @author POOL_LAPTOP
+ */
+public class ConstantFtp {
+    /* report_type
+     โฟร์เดอร์ เก็บไฟล์ xls บน server
+     ae74,
+     chl,
+     indv,
+     noni,
+     oprf,
+     type5,
+     */
+
+    public static final String RPT_AE74 = "ae74";
+    public static final String RPT_CLH = "clh";
+    public static final String RPT_INDV = "indv";
+    public static final String RPT_NONI = "noni";
+    public static final String RPT_OPRF = "oprf";
+    public static final String RPT_TYPE5 = "type5";
+
+    public static final String[] FTP_RPT_AlIASES = new String[]{
+        "-- select --", "ae74", "clh", "indv", "noni", "oprf", "type5"
+    };
+    /*
+     "OPTYPE 6[ClearingHouse]",
+     "OPAE 74 ของพี่คาเล่",
+     "OPTYPE 5[OP บัตรตัวเอง]",
+     "Individual ของพี่กิ๊ฟ",
+     "Refer/AE ของพี่เก๋",
+     "HC16_&&_chula",
+     "Noni ของพี่พิม",
+     "แพทย์แผนไทย ประคบ อบ จ่ายยาสมุนไพร",  //modified 06-06-2015
+     "แพทย์แผนไทย บริการมารดาหลังคลอด" //modified 06-06-2015
+     */
+    public static final String[] FTP_RPT_LABEL = new String[]{
+        "-- select --",
+        "รายงาน OPAE 74 ของพี่คาเล่ ",
+        "รายงาน OPTYPE 6[ClearingHouse]",
+        "รายงาน Individual ของพี่กิ๊ฟ",
+        "รายงาน Noni ของพี่พิม",
+        "รายงาน Refer/AE ของพี่เก๋",
+        "รายงาน OPTYPE 5[OP บัตรตัวเอง]"
+    };
+    public final static String[] FTP_STATUS = new String[]{"เกิดข้อผิดพลาดในการอัพโหลด", "อัพโหลดเรียบร้อย"};
+}

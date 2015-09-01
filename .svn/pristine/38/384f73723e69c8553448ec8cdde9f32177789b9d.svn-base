@@ -1,0 +1,34 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.support;
+
+import com.claim.component.JTextAreaUtil;
+import com.claim.ui.UiMainClaim;
+import javax.swing.JTextArea;
+
+/**
+ *
+ * @author Poolsawat.a
+ */
+public class Console {
+
+    public static void LOG(String msg, int msg_type) {
+        if (msg_type == 1) {
+            UiMainClaim.txt_console.append("\n infomation log : ");
+        } else if (msg_type == 0) {
+            UiMainClaim.txt_console.append("\n error log         : ");
+        } else if (msg_type == 2) {
+            UiMainClaim.txt_console.append("\n warning log     : ");
+        }
+        UiMainClaim.txt_console.append(msg);
+        //UiMainClaim.txt_console.append("\n");
+        JTextAreaUtil.setCursorPosition(Console.getComponentLog());
+    }
+
+    public static JTextArea getComponentLog() {
+        return UiMainClaim.txt_console;
+    }
+}

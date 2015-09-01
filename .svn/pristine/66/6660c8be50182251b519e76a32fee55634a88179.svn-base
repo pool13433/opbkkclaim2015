@@ -1,0 +1,341 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.support;
+
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+public class BaseFunction {
+
+    public static final String[] PROCE_TABLE = new String[]{
+        "-",
+        "OPTYPE 6[ClearingHouse]",
+        "OPAE 74 ของพี่คาเล่",
+        "OPTYPE 5[OP บัตรตัวเอง]",
+        "Individual ของพี่กิ๊ฟ",
+        "Refer/AE ของพี่เก๋",
+        "HC16_&&_chula",
+        "Noni ของพี่พิม",
+        "แพทย์แผนไทย ประคบ อบ จ่ายยาสมุนไพร",  //modified 06-06-2015
+        "แพทย์แผนไทย บริการมารดาหลังคลอด" //modified 06-06-2015
+    };
+
+    public static final String[] PROCE_TABLE_PAYMENT = new String[]{
+        "-", "OPTYPE 6[ClearingHouse]",
+        "OPAE 74",
+        "OPTYPE 5[197]",
+        "OPTYPE 5[HightCost]",
+        "Individual",
+        "Refer/AE",
+        "HC16_&&_chula",
+        "Noni",
+        "แพทย์แผนไทย ประคบ อบ จ่ายยาสมุนไพร",  //modified 06-06-2015
+        "แพทย์แผนไทย บริการมารดาหลังคลอด" //modified 06-06-2015
+    };
+    public static final String[] TABLE_NAME = new String[]{
+        "-",
+        "RPT_OPBKK_TYPE6",
+        "RPT_OPBKK_OPAE74",
+        "RPT_OPBKK_TYPE5", // RPT_OPBKK_TYPE5 = 197,hc
+        "RPT_OPBKK_TYPE5",
+        "RPT_OPBKK_INDV",
+        "RPT_OPBKK_OPREFER",
+        "RPT_OPBKK_HC16CHULA",
+        "RPT_OPBKK_NONI",
+        "RPT_OPBKK_TMD_ACT", // modified 06-06-2015
+        "RPT_OPBKK_TMD_MOM" //modified 06-06-2015
+    };
+    public static final String[] TABLE_ALIAS = new String[]{
+        "-",
+        "CH",
+        "AE",
+        "T5_197",
+        "T5_HC",
+        "ID",
+        "RF",
+        "CHULA",
+        "NN",
+        "TMD_ACT",
+        "TMD_MOM"
+    };
+    /*
+    RPT_OPAE74_74_2014
+    RPT_OPCLH
+    RPT_OPNONI
+    RPT_OPREFER_2014
+    RPT_OPAE74_AE
+    RPT_OPAE74_74
+    RPT_TMD_ACT
+    RPT_OPAE74_AE_2014
+    RPT_OPREFER
+    RPT_OPINDV
+    RPT_TMD_MOM
+    RPT_OPTYPE5_2014
+    */
+    public static String[] LOG_TABLE_NAME = new String[]{"",
+        "RPT_OPCLH",
+        "RPT_OPAE74_AE", 
+        "RPT_OPTYPE5_2014",
+        "RPT_OPTYPE5_2014",
+        "RPT_OPINDV",
+        "RPT_OPREFER", 
+        "RPT_HC16CHULA",
+        "RPT_OPNONI",
+        "RPT_TMD_ACT",
+        "RPT_TMD_MOM"
+    };
+
+    public static String[] MMonth = new String[]{"ระบุ", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"};
+    public static String[] MMONTH_SHORT = new String[]{"", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."};
+    public static String[] INDEX_MONTH = {"-", "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"};
+    public static String[] INDEX_AUTO = {"-", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"};
+
+    public static int[] INDEX_YEAR(int limit) {
+        int[] years = new int[limit + limit];
+//        //int year = Calendar.getInstance().get(Calendar.YEAR);
+//        Locale local = new Locale("en", "EN");
+//        Date dateNow = new Date();
+//        SimpleDateFormat format1 = new SimpleDateFormat("yyyy", local);
+        Integer year = Integer.parseInt(new DateUtil().getCurrentYearFromServer());
+
+        int j = 0;
+        for (int i = (year + limit); i > (year - limit); i--) {
+            years[j] = i;
+            j++;
+        }
+        return years;
+    }
+
+    public List<Integer> MYear() {
+        try {
+            Locale local = new Locale("en", "EN");
+            Date dateNow = new Date();
+            SimpleDateFormat format1 = new SimpleDateFormat("yyyy", local);
+
+            Integer intYear = Integer.parseInt(format1.format(dateNow).toString());
+            // System.out.println("Year ===>>" + intYear);
+            List<Integer> listYear = new ArrayList<Integer>();
+            for (int i = (intYear + 543); i > ((intYear + 542) - 50); i--) {
+                if (i > 2555) {
+                    listYear.add(new Integer(i));
+                }
+            }
+            return listYear;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /*public String[] MgetListType_() {
+        try {
+
+            String[] arrTypr = {"", "การจ่ายชดเชยค่าใช้จ่าย OP Refer กรณี OP High cost(กรณีตรงบัตร)",
+                "การจ่ายชดเชยค่าบริการ  กรณีอุบัติเหตุ/ฉุกเฉินต่างบัญชีเครือข่าย(OPAE)กรณีผู้พิการ(Opพิการ)  กรณีฟื้นฟูสมรรถภาพ และอุปกรณ์เครื่องช่วยคนพิการ",
+                "การจ่ายชดเชยค่าบริการ  กรณีอุบัติเหตุ/ฉุกเฉินต่างบัญชีเครือข่าย(OPAE)",
+                "การจ่ายชดเชยค่าบริการผู้ป่วยนอก  กรณีค่าใช้จ่ายสูง(OPHC)",
+                "การจ่ายชดเชยค่าบริการ  กรณีผู้พิการ(OPพิการ)",
+                "การจ่ายชดเชยค่าบริการฟื้นฟูสมรรถภาพและอุปกรณ์เครื่องช่วยคนพิการ กรณีบัตร UC กรุงเทพมหานคร",
+                "การจ่ายชดเชยค่าบริการฟื้นฟูสมรรถภาพและอุปกรณ์เครื่องช่วยคนพิการ กรณีบัตร UC ต่างจังหวัด",
+                "การจ่ายชดเชยค่าพาหนะส่งต่อผู้ป่วยนอก  กรณีอุบัติเหตุ/ฉุกเฉิน",
+                "การจ่ายชดเชยค่าข้อมูลผู้ป่วยนอกรายบุคคล",
+                "การหักเงินค่าบริการ OP Refer และ A/E ในบัญชีเครือข่ายเดียวกัน (กรณีคลินิกเดี่ยว)",
+                "การหักเงินค่าบริการ OP Refer และ A/E ในบัญชีเครือข่ายเดียวกัน (กรณีคลินิกเครือและโรงพยาบาล)",
+                "การจ่ายชดเชยการจ่ายชดเชยค่าบริการ OP Refer และ A/E ในบัญชีเครือข่ายเดียวกัน (กรณีคลินิกเดี่ยว)",
+                "การจ่ายชดเชยการจ่ายชดเชยค่าบริการ OP Refer และ A/E ในบัญชีเครือข่ายเดียวกัน (กรณีคลินิกเครือและโรงพยาบาล)",
+                "การหักเงินค่าบริการ OP Refer และ A/E ในบัญชีเครือข่ายเดียวกัน",
+                "การจ่ายชดเชยค่าใช้จ่าย OP Refer กรณี OP 197 รายการ (กรณีตรงบัตร)",
+                "การจ่ายชดเชยค่าบริการผู้ป่วยนอก กรณี Clearing house ให้ศูนย์บริการสาธารณสุข",
+                "การหักเงินค่าบริการผู้ป่วยนอก กรณี Clearing house ให้ศูนย์บริการสาธารณสุข"};
+
+            return arrTypr;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }*/
+
+    public int[] Mnumber() {
+        try {
+            int[] no = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+            return no;
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    
+
+    public String subStringPid(String personalId) {
+        String pid = "";
+        try {
+            //System.out.println("personalId++"+personalId);
+            //1-2090-00055-83-7
+
+            // x-xxxx-xxxxx-xx-x  ,
+            // 3-130-60015-43-71
+            String p1 = personalId.substring(0, 1);
+            String p2 = personalId.substring(1, 5);
+            String p3 = personalId.substring(5, 10);
+            String p4 = personalId.substring(10, 12);
+            String p5 = personalId.substring(12, 13);
+
+            pid = p1 + "-" + p2 + "-" + p3 + "-" + p4 + "-" + p5;
+            return pid;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return pid;
+    }
+
+    public String[] subStringStmp(String stmp) {
+        String[] arrStmp = new String[3];
+        //System.out.println("stmp.length===>>>>" + stmp);
+        //System.out.println(" stmp.substring(0, 4);===>>" + stmp.substring(0, 4));
+        //System.out.println(" stmp.substring(4, 6);===>>" + stmp.substring(4, 6));
+        //System.out.println(" stmp.substring(6, 7);===>>" + stmp.substring(7, 8));
+        arrStmp[0] = stmp.substring(0, 4).toString();
+        arrStmp[1] = stmp.substring(4, 6).toString();
+        arrStmp[2] = stmp.substring(7, 8).toString();
+
+        return arrStmp;
+    }
+
+    public String convertMonthThai(String keyMonth) {
+        String monthTh = "";
+        try {
+            Map<String, String> map = new HashMap();
+            map.put("01", MMonth[1]);
+            map.put("02", MMonth[2]);
+            map.put("03", MMonth[3]);
+            map.put("04", MMonth[4]);
+            map.put("05", MMonth[5]);
+            map.put("06", MMonth[6]);
+            map.put("07", MMonth[7]);
+            map.put("08", MMonth[8]);
+            map.put("09", MMonth[9]);
+            map.put("10", MMonth[10]);
+            map.put("11", MMonth[11]);
+            map.put("12", MMonth[12]);
+
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                // System.out.println("Key : " + entry.getKey() + " Value : "+ entry.getValue());
+                if (keyMonth.equals(entry.getKey())) {
+                    monthTh = entry.getValue();
+                }
+            }
+            if (monthTh == null) {
+                monthTh = "-";
+            }
+            return monthTh;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return monthTh;
+    }
+
+    public static Map subStringYearMonth(String ym) {
+        Map<String, String> mapYM = new HashMap();
+        try {
+            System.out.println(" ym :: " + ym);
+            if (!ym.equals("-")) {
+                mapYM.put("Y", ym.substring(0, 4));
+                mapYM.put("M", ym.substring(4, 6));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return mapYM;
+    }
+
+    public Integer convertYearFromAD_to_BE(String yearAD) {
+        Integer yearBE = null;
+        try {
+            yearBE = Integer.parseInt(yearAD) + 543;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return yearBE;
+    }
+
+    public String getTitleTimeReport(Object obYM, Object obN) {
+        StringBuilder titleTime = null;
+        try {
+            if (obYM != null) {
+                //System.out.println("obYM==>>" + obYM);
+                String obY = subStringYearMonth(obYM.toString()).get("Y").toString(); // Year
+                String obM = subStringYearMonth(obYM.toString()).get("M").toString(); //Month
+
+                if (obY != null) {
+                    titleTime = new StringBuilder();
+                    titleTime.append(" งวดการจ่ายเงิน");
+                    titleTime.append(obYM).append("-").append(obN);
+                    titleTime.append(": เดือน ");
+                    titleTime.append(convertMonthThai(obM)).append(" ");
+                    titleTime.append(convertYearFromAD_to_BE(obY)).append(" ครั้งที่ ");
+                    titleTime.append(obN);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return titleTime.toString();
+    }
+
+    public  void openDirectoryAutomatic(String pathDirectory) throws IOException {
+        Desktop desktop = Desktop.getDesktop();
+        File dirToOpen = null;
+        try {
+            dirToOpen = new File(pathDirectory);
+            desktop.open(dirToOpen);
+        } catch (IllegalArgumentException iae) {
+            System.out.println("File Not Found");
+        }
+    }
+
+    public  boolean createFolder(String filePath) {
+        boolean status = false;
+        String[] directory = filePath.split("\\\\");
+        System.out.println(" length : " + directory.length);
+        File file1 = new File(filePath);
+        if (!file1.exists()) {
+            file1.mkdir();
+            status = true;
+        } else {
+            status = false;
+        }
+        return status;
+    }
+
+    public  boolean createMutiDirectory(File fullPath) {
+        boolean status = false;
+        System.out.println("fullPath ::==" + fullPath.toString());
+        if (!fullPath.exists()) {
+            if (fullPath.mkdirs()) {
+                System.out.println("Multiple directories are created!");
+                Console.LOG("สร้าง folder เก็บไฟล์", 1);
+            } else {
+                System.out.println("Failed to create multiple directories!");
+                Console.LOG("สร้าง folder เก็บไฟล์ ไม่ได้ ", 0);
+            }
+        }
+        return status;
+    }
+
+    public static void main(String[] args) {
+        
+    }
+
+}

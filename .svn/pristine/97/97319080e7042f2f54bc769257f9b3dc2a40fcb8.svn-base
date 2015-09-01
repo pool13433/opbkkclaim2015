@@ -1,0 +1,8 @@
+#Properties File FTP to server
+ 
+serverAddress=localhost
+port=21
+userId=anonymous   
+password=
+remoteDirectory=/
+#localDirectory=###

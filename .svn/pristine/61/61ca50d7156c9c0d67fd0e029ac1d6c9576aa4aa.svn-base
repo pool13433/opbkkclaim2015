@@ -1,0 +1,753 @@
+package com.claim.dao;
+
+import com.claim.connection.ConnectionDB;
+import com.claim.object.ObjCallStoreCreateData;
+import com.claim.support.BaseFunction;
+import com.claim.support.Console;
+import com.claim.support.Constants;
+import com.claim.support.DateUtil;
+import com.claim.support.ProgrameStatus;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class CreateDataStoreDAO {
+
+    Connection conn = null;
+    static final int BUDGET_MONTH = 9;
+    private static final String PKG_RPT_57 = "pkg_rpt_opbkk";
+    private static final String PKG_RPT_58 = "pkg_rpt_opbkk_2015";
+    private static int DAYS_IN_YEAR = 356;
+
+    public CreateDataStoreDAO() {
+        conn = getConOracle();
+    }
+
+    private Connection getConOracle() {
+        Connection vConn = null;
+        ConnectionDB connec = new ConnectionDB("True", "", "", "", "", "", "", "1");
+        vConn = connec.getConnectionInf();
+        return vConn;
+    }
+
+    public ProgrameStatus callOracleStored(ObjCallStoreCreateData bean) {
+        int status = 0;
+        ProgrameStatus programeStatus = new ProgrameStatus();
+        try {
+            DateUtil dateUtil = new DateUtil();
+            if (bean.getIndex_table().equals(1)) { // ############### clearing ##############
+
+                // stmp  201503-1 ที่เป็นปัญหา เรียก datesend ถึง 28 กพ.58
+               /* if (Arrays.asList(Constants.STMP_CLEARING_FIX).contains(bean.getStmp()+"-"+bean.getStmp_round())) {
+                 //########## 2558 #############
+                 status = callOracleStored_clearing(PKG_RPT_58, "proc_clearinghouse_rpt", bean);
+                 //########## End2558 ##########
+
+                 //########## 2557 #############
+                 status = callOracleStored_clearing(PKG_RPT_57, "proc_clearinghouse_rpt", bean);
+                 //########## End 2557 #########
+                 Console.LOG("ประมวลผล ปีงบ 2557 และ ปีงบ 2558 เรียบร้อยแล้ว", 1);
+                 } else { // งวดปกติ แยก เหมือนเดิม
+                 if (dateUtil.CheckDateOpdBudgetYear2015(bean.getOpd_date_stop(), BUDGET_MONTH)) { // >= 2558
+                 status = callOracleStored_clearing(PKG_RPT_58, "proc_clearinghouse_rpt", bean);
+                 Console.LOG("ประมวลผล ปีงบ 2558", 1);
+                 } else {
+                 status = callOracleStored_clearing(PKG_RPT_57, "proc_clearinghouse_rpt", bean);
+                 Console.LOG("ประมวลผล ปีงบ 2557", 1);
+                 }
+                 }*/
+                //########## 2558 #############
+                status = callOracleStored_clearing(PKG_RPT_58, "proc_clearinghouse_rpt", bean);
+                //########## End2558 ##########
+
+                //########## 2557 #############
+                status = callOracleStored_clearing(PKG_RPT_57, "proc_clearinghouse_rpt", bean);
+                //########## End 2557 #########
+                Console.LOG("ประมวลผล ปีงบ 2557 และ ปีงบ 2558 เรียบร้อยแล้ว", 1);
+
+            } else if (bean.getIndex_table().equals(2)) { //#########  indexTable opae + 74#######
+
+                if (bean.getOpae_option() == 0) { // all (opae + 74)  
+                    if (dateUtil.CheckDateOpdCurrentBudgetYear(bean.getOpd_date_stop(), BUDGET_MONTH)) { // >= 2558
+                        status = callOracleStored_opae_74(PKG_RPT_58, "proc_ae74_ae_rpt", bean);
+
+                        status = callOracleStored_opae_74(PKG_RPT_58, "proc_ae74_74_rpt", bean);
+                        Console.LOG("ประมวลผล ปีงบ 2558", 1);
+                    } else { // < 2558
+                        status = callOracleStored_opae_74(PKG_RPT_57, "proc_ae74_ae_rpt", bean);
+
+                        status = callOracleStored_opae_74(PKG_RPT_57, "proc_ae74_74_rpt", bean);
+                        Console.LOG("ประมวลผล ปีงบ 2557", 1);
+                    }
+                    /*
+                     //########## 2558 #############
+                     status = callOracleStored_opae_74(PKG_RPT_58, "proc_ae74_ae_rpt", bean);
+                     status = callOracleStored_opae_74(PKG_RPT_58, "proc_ae74_74_rpt", bean);
+                     //########## END 2558 ##########
+
+                     //########## 2557 #############
+                     status = callOracleStored_opae_74(PKG_RPT_57, "proc_ae74_ae_rpt", bean);
+                     status = callOracleStored_opae_74(PKG_RPT_57, "proc_ae74_74_rpt", bean);
+                     //########## END 2557 #########
+                     Console.LOG("ประมวลผล ปีงบ 2557 และ ปีงบ 2558 เรียบร้อยแล้ว", 1);
+                     */
+                    //
+                } else if (bean.getOpae_option() == 1) { // opae
+                    if (dateUtil.CheckDateOpdCurrentBudgetYear(bean.getOpd_date_stop(), BUDGET_MONTH)) { // >= 2558
+                        status = callOracleStored_opae_74(PKG_RPT_58, "proc_ae74_ae_rpt", bean);
+                        Console.LOG("ประมวลผล ปีงบ 2558", 1);
+                    } else {
+                        status = callOracleStored_opae_74(PKG_RPT_57, "proc_ae74_ae_rpt", bean);
+                        Console.LOG("ประมวลผล ปีงบ 2557", 1);
+                    }
+                    /*
+                     //########## 2558 #############
+                     status = callOracleStored_opae_74(PKG_RPT_58, "proc_ae74_ae_rpt", bean);
+                     //########## End 2558 #########
+
+                     //########## 2557 #############
+                     status = callOracleStored_opae_74(PKG_RPT_57, "proc_ae74_ae_rpt", bean);
+                     //########## End 2557 ##########
+                     Console.LOG("ประมวลผล ปีงบ 2557 และ ปีงบ 2558 เรียบร้อยแล้ว", 1);
+                     */
+                } else if (bean.getOpae_option() == 2) { // 74
+                    if (dateUtil.CheckDateOpdCurrentBudgetYear(bean.getOpd_date_stop(), BUDGET_MONTH)) { // >= 2558
+                        status = callOracleStored_opae_74(PKG_RPT_58, "proc_ae74_74_rpt", bean);
+                        Console.LOG("ประมวลผล ปีงบ 2558", 1);
+                    } else {
+                        status = callOracleStored_opae_74(PKG_RPT_57, "proc_ae74_74_rpt", bean);
+                        Console.LOG("ประมวลผล ปีงบ 2557", 1);
+                    }
+                    /*
+                     //####### 2558 ##########
+                     status = callOracleStored_opae_74(PKG_RPT_58, "proc_ae74_74_rpt", bean);
+                     //####### End 2558 #######
+
+                     //####### 2557 ##########
+                     status = callOracleStored_opae_74(PKG_RPT_57, "proc_ae74_74_rpt", bean);
+                     //####### End 2557 #######
+                     Console.LOG("ประมวลผล ปีงบ 2557 และ ปีงบ 2558 เรียบร้อยแล้ว", 1);
+                     */
+                }
+            } else if (bean.getIndex_table().equals(3)) { // ################ ##type 5 ###########
+
+                /*
+                 Modified by pool 11-06-2015
+                 */
+                if (dateUtil.CheckDateOpdCurrentBudgetYear(bean.getOpd_date_stop(), BUDGET_MONTH)
+                        && new UtilDao().getDifferenceBetween2date(bean.getOpd_date_stop(), bean.getOpd_date_start()) > DAYS_IN_YEAR) {
+
+                    status = callOracleStored_type5(PKG_RPT_58, "proc_type5_rpt", bean);
+                    Console.LOG("ประมวลผล ปีงบ 2558", 1);
+
+                    status = callOracleStored_type5(PKG_RPT_57, "proc_type5_rpt", bean);
+                    Console.LOG("ประมวลผล ปีงบ 2557", 1);
+                    /*
+                     Modified by pool 11-06-2015
+                     */
+                } else if (dateUtil.CheckDateOpdCurrentBudgetYear(bean.getOpd_date_stop(), BUDGET_MONTH)) { // >= 2558
+                    status = callOracleStored_type5(PKG_RPT_58, "proc_type5_rpt", bean);
+                    Console.LOG("ประมวลผล ปีงบ 2558", 1);
+                } else {
+                    status = callOracleStored_type5(PKG_RPT_57, "proc_type5_rpt", bean);
+                    Console.LOG("ประมวลผล ปีงบ 2557", 1);
+                }
+                /*
+                 // 2558
+                 status = callOracleStored_type5(PKG_RPT_58, "proc_type5_rpt", bean);
+
+                 //2557
+                 status = callOracleStored_type5(PKG_RPT_57, "proc_type5_rpt", bean);
+                 
+                 Console.LOG("ประมวลผล ปีงบ 2557 และ ปีงบ 2558 เรียบร้อยแล้ว", 1);
+                 */
+            } else if (bean.getIndex_table().equals(4)) { // ###################individual  ########
+                if (dateUtil.CheckDateOpdCurrentBudgetYear(bean.getOpd_date_stop(), BUDGET_MONTH)
+                        && new UtilDao().getDifferenceBetween2date(bean.getOpd_date_stop(), bean.getOpd_date_start()) > DAYS_IN_YEAR) {
+
+                    status = callOracleStored_individual(PKG_RPT_58, "proc_individual_rpt", bean);
+                    System.out.println("ประมวลผล ปีงบ 2558");
+                    Console.LOG("ประมวลผล ปีงบ 2558", 1);
+
+                    status = callOracleStored_individual(PKG_RPT_57, "proc_individual_rpt", bean);
+                    System.out.println("ประมวลผล ปีงบ 2557");
+                    Console.LOG("ประมวลผล ปีงบ 2557", 1);
+
+                } else if (dateUtil.CheckDateOpdCurrentBudgetYear(bean.getOpd_date_stop(), BUDGET_MONTH)) {
+                    status = callOracleStored_individual(PKG_RPT_58, "proc_individual_rpt", bean);
+                    System.out.println("ประมวลผล ปีงบ 2558");
+                    Console.LOG("ประมวลผล ปีงบ 2558", 1);
+                } else {
+                    status = callOracleStored_individual(PKG_RPT_57, "proc_individual_rpt", bean);
+                    System.out.println("ประมวลผล ปีงบ 2557");
+                    Console.LOG("ประมวลผล ปีงบ 2557", 1);
+                }
+
+                /*// 2558
+                 status = callOracleStored_individual(PKG_RPT_58, "proc_individual_rpt", bean);
+
+                 //2557
+                 status = callOracleStored_individual(PKG_RPT_57, "proc_individual_rpt", bean);
+                 Console.LOG("ประมวลผล ปีงบ 2557 และ ปีงบ 2558 เรียบร้อยแล้ว", 1);*/
+                // modified 05-06-2015
+                /*
+                 call ของพี่เบียร์
+                 */
+                if (status == 1) { // ต้องสร้าง ข้อมูลผ่านไม่เกิดข้อผิดพลาดถึงจะสั่งรันได้
+                    status = this.callIndvProcedureCheckDup(bean.getStmpyyyymm_no());
+                }
+            } else if (bean.getIndex_table().equals(5)) { //################# refer ############
+                if (bean.getRefer_option() == 1) { // สร้าง รวม 57,58
+                    //################## ปีงบ 2558 #########
+                    status = callOracleStored_refer(PKG_RPT_58, "proc_refer_rpt", bean);
+                    //################## ปีงบ 2558 #########
+
+                    //################## ปีงบ 2557 #########
+                    status = callOracleStored_refer(PKG_RPT_57, "proc_refer_rpt", bean);
+                    //################## ปีงบ 2557 #########
+                    Console.LOG("ประมวลผล สร้าง รวม ปีงบ 2557 และ ประมวลผล ปีงบ 2558", 1);
+
+                } else if (bean.getRefer_option() == 2) { // แยกสร้าง 
+                    if (dateUtil.CheckDateOpdCurrentBudgetYear(bean.getOpd_date_stop(), BUDGET_MONTH)) { // >= 2558
+                        status = callOracleStored_refer(PKG_RPT_58, "proc_refer_rpt", bean);
+                        Console.LOG("ประมวลผล แยกสร้าง ปีงบ 2558", 1);
+                    } else {
+                        status = callOracleStored_refer(PKG_RPT_57, "proc_refer_rpt", bean);
+                        Console.LOG("ประมวลผล แยกสร้าง ปีงบ 2557", 1);
+                    }
+                } else {
+                    Console.LOG("กรุณาเลือก รูปแบบการสร้างก่อน กวาดหมด หรือ แยกสร้าง", 0);
+                }
+
+            } else if (bean.getIndex_table().equals(6)) { // ##################Chula16  ########
+
+                //################## ปีงบ 2557 #########
+                status = this.callOracleStored_Chula16(PKG_RPT_58, "proc_HC16CHULA_rpt", bean);
+                    //################## ปีงบ 2557 #########
+
+                //################## ปีงบ 2556 #########
+                status = this.callOracleStored_Chula16(PKG_RPT_57, "proc_HC16CHULA_rpt", bean);
+                //################## ปีงบ 2556 #########
+            } else if (bean.getIndex_table().equals(7)) { // ##################Noni ########
+
+                //################## ปีงบ 2557 #########
+                status = this.callOracleStored_noni(PKG_RPT_58, "proc_noni_rpt", bean);
+                //################## ปีงบ 2557 #########
+
+            } else if (bean.getIndex_table().equals(8)) { // ##################ThaiMedicineAct ########
+
+                //################## ปีงบ 2557 #########
+                status = this.callOracleStored_thaiMedicineAct(PKG_RPT_58, "proc_tmd_act_rpt", bean);
+                //################## ปีงบ 2557 #########
+
+            } else if (bean.getIndex_table().equals(9)) { // ##################ThaiMedicineMom ########
+
+                //################## ปีงบ 2557 #########
+                status = this.callOracleStored_thaiMedicineMom(PKG_RPT_58, "proc_tmd_mom_rpt", bean);
+                //################## ปีงบ 2557 #########
+
+            } else { // other
+                Console.LOG("การเรียกสร้างข้อมูลไม่ถูกต้อง", 0);
+            }
+
+            if (status == 1) {
+                programeStatus.setMessage("สร้างข้อมูลเรียบร้อย เสร็จสิ้น");
+                programeStatus.setTitle("Message Infomation");
+                programeStatus.setProcessStatus(true);
+            } else {
+                Console.LOG("การสร้างข้อมูลเกิดข้อผิดพลาด", 0);
+                programeStatus.setMessage("การสร้างข้อมูลเกิดข้อผิดพลาด");
+                programeStatus.setTitle("Message Error");
+                programeStatus.setProcessStatus(false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+            programeStatus.setMessage(Constants.MSG_PROCESS_FAILS + e.toString());
+            programeStatus.setTitle(Constants.MSG_CONTACT_ADMIN);
+            programeStatus.setProcessStatus(false);
+        }
+        return programeStatus;
+    }
+
+    private int callOracleStored_opae_74(String packageName, String tableName, ObjCallStoreCreateData bean) {
+        StringBuilder storeProce = null;
+        CallableStatement callableStatement = null;
+        int exec = 0;
+        try {
+            storeProce = new StringBuilder();
+            storeProce.append("{call opbkkclaim.").append(packageName).append(".").append(tableName);
+
+            storeProce.append(" (?,?,?,?,?,?,?,?,?)}");
+
+            callableStatement = conn.prepareCall(storeProce.toString());
+
+            callableStatement.setString(1, bean.getOpd_date_start()); // opd_date_start
+            callableStatement.setString(2, bean.getOpd_date_stop());// opd_date_stop
+            callableStatement.setString(3, bean.getOpd_send_start()); // opd_send_start
+            callableStatement.setString(4, bean.getOpd_send_stop()); // // opd_send_stop
+            callableStatement.setString(5, null); // stmplist
+            callableStatement.setString(6, bean.getStmp().substring(0, 6)); // stmp 201401-
+            callableStatement.setString(7, bean.getStmp_round()); // stmp_round -1
+            callableStatement.setString(8, bean.getStmp_no()); // stmp_no
+            callableStatement.setString(9, bean.getPay_rate());
+
+            System.out.println("ObjCallStoreCreateData : " + bean.toString());
+            exec = callableStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return exec;
+    }
+
+    private int callOracleStored_type5(String packageName, String tableName, ObjCallStoreCreateData bean) {
+        StringBuilder storeProce = null;
+        CallableStatement callableStatement = null;
+        int exec = 0;
+        try {
+            storeProce = new StringBuilder();
+            storeProce.append("{call opbkkclaim.").append(packageName).append(".").append(tableName);
+
+            storeProce.append(" (?,?,?,?,?,?,?,?)}");
+
+            System.out.println("sqlStoreProcedure: " + storeProce);
+
+            callableStatement = conn.prepareCall(storeProce.toString());
+
+            /**/
+//            VTABLE_TYPE := /*'REPORT_TABLE'*/'PAYMENT_TABLE';
+//            VDATE_OPD_BEGIN := '20131001';
+//            VDATE_OPD_END := '20131231';
+//            VDATESEND_BEGIN := null;
+//            VDATESEND_END := '20140131';
+//            VSTMA_LIST := NULL;
+//            VSTMP := '201403';
+//            VSTMP_ROUND := 1;
+            /* */
+            //callableStatement.setString(1, "RPT_OPBKK_TABLE");
+            callableStatement.setString(1, bean.getOpd_date_start()); // opd_date_start
+            callableStatement.setString(2, bean.getOpd_date_stop());// opd_date_stop
+            callableStatement.setString(3, bean.getOpd_send_start()); // opd_send_start
+            callableStatement.setString(4, bean.getOpd_send_stop()); // // opd_send_stop
+            callableStatement.setString(5, null); // stmplist
+            callableStatement.setString(6, bean.getStmp().substring(0, 6)); // stmp
+            callableStatement.setString(7, bean.getStmp_round()); // stmp_round
+            callableStatement.setString(8, bean.getStmp_no()); // stmp_no
+
+            System.out.println(" ObjCallStoreCreateData : " + bean.toString());
+
+            exec = callableStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return exec;
+    }
+
+    private int callOracleStored_refer(String packageName, String tableName, ObjCallStoreCreateData bean) {
+        StringBuilder storeProce = null;
+        CallableStatement callableStatement = null;
+        int exec = 0;
+        try {
+            storeProce = new StringBuilder();
+            storeProce.append("{call opbkkclaim.").append(packageName).append(".").append(tableName);
+
+            storeProce.append(" (?,?,?,?,?,?,?,?)}");
+
+            System.out.println("sqlStoreProcedure: " + storeProce);
+
+            callableStatement = conn.prepareCall(storeProce.toString());
+
+            /**/
+//            VTABLE_TYPE := /*'REPORT_TABLE'*/'PAYMENT_TABLE';
+//            VDATE_OPD_BEGIN := '20131001';
+//            VDATE_OPD_END := '20131231';
+//            VDATESEND_BEGIN := null;
+//            VDATESEND_END := '20140131';
+//            VSTMA_LIST := NULL;
+//            VSTMP := '201403';
+//            VSTMP_ROUND := 1;
+            /* */
+            //callableStatement.setString(1, "RPT_OPBKK_TABLE");
+            callableStatement.setString(1, bean.getOpd_date_start()); // opd_date_start
+            callableStatement.setString(2, bean.getOpd_date_stop());// opd_date_stop
+            callableStatement.setString(3, bean.getOpd_send_start()); // opd_send_start
+            callableStatement.setString(4, bean.getOpd_send_stop()); // // opd_send_stop
+            callableStatement.setString(5, null); // stmplist
+            callableStatement.setString(6, bean.getStmp().substring(0, 6)); // stmp
+            callableStatement.setString(7, bean.getStmp_round()); // stmp_round
+            callableStatement.setString(8, bean.getStmp_no()); // stmp_no
+
+            System.out.println(" ObjCallStoreCreateData : " + bean.toString());
+
+            exec = callableStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return exec;
+    }
+
+    private int callOracleStored_noni(String packageName, String tableName, ObjCallStoreCreateData bean) {
+        StringBuilder storeProce = null;
+        CallableStatement callableStatement = null;
+        int exec = 0;
+        try {
+            storeProce = new StringBuilder();
+            storeProce.append("{call opbkkclaim.").append(packageName).append(".").append(tableName);
+
+            storeProce.append(" (?,?,?,?,?,?,?,?)}");
+
+            System.out.println("sqlStoreProcedure: " + storeProce);
+
+            callableStatement = conn.prepareCall(storeProce.toString());
+
+            /**/
+//            VTABLE_TYPE := /*'REPORT_TABLE'*/'PAYMENT_TABLE';
+//            VDATE_OPD_BEGIN := '20131001';
+//            VDATE_OPD_END := '20131231';
+//            VDATESEND_BEGIN := null;
+//            VDATESEND_END := '20140131';
+//            VSTMA_LIST := NULL;
+//            VSTMP := '201403';
+//            VSTMP_ROUND := 1;
+            /* */
+            //callableStatement.setString(1, "RPT_OPBKK_TABLE");
+            callableStatement.setString(1, bean.getOpd_date_start()); // opd_date_start
+            callableStatement.setString(2, bean.getOpd_date_stop());// opd_date_stop
+            callableStatement.setString(3, bean.getOpd_send_start()); // opd_send_start
+            callableStatement.setString(4, bean.getOpd_send_stop()); // // opd_send_stop
+            callableStatement.setString(5, null); // stmplist
+            callableStatement.setString(6, bean.getStmp().substring(0, 6)); // stmp
+            callableStatement.setString(7, bean.getStmp_round()); // stmp_round
+            callableStatement.setString(8, bean.getStmp_no()); // stmp_no
+
+            System.out.println(" ObjCallStoreCreateData : " + bean.toString());
+
+            exec = callableStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return exec;
+    }
+
+    private int callOracleStored_thaiMedicineAct(String packageName, String tableName, ObjCallStoreCreateData bean) {
+        StringBuilder storeProce = null;
+        CallableStatement callableStatement = null;
+        int exec = 0;
+        try {
+            storeProce = new StringBuilder();
+            storeProce.append("{call opbkkclaim.").append(packageName).append(".").append(tableName);
+
+            storeProce.append(" (?,?,?,?,?,?,?,?)}");
+
+            System.out.println("sqlStoreProcedure: " + storeProce);
+
+            callableStatement = conn.prepareCall(storeProce.toString());
+            /*
+             p_date_opd_begin VARCHAR2,
+             p_date_opd_end VARCHAR2,
+             p_datesend_begin VARCHAR2,
+             p_datesend_end VARCHAR2,
+             p_stma_list VARCHAR2,
+             p_stmp VARCHAR2,
+             p_stmp_round VARCHAR2,
+             p_stmp_no varchar2
+             */
+
+            //callableStatement.setString(1, "RPT_OPBKK_TABLE");
+            callableStatement.setString(1, bean.getOpd_date_start()); // opd_date_start
+            callableStatement.setString(2, bean.getOpd_date_stop());// opd_date_stop
+            callableStatement.setString(3, bean.getOpd_send_start()); // opd_send_start
+            callableStatement.setString(4, bean.getOpd_send_stop()); // // opd_send_stop
+            callableStatement.setString(5, null); // stmplist
+            callableStatement.setString(6, bean.getStmp().substring(0, 6)); // stmp
+            callableStatement.setString(7, bean.getStmp_round()); // stmp_round
+            callableStatement.setString(8, bean.getStmp_no()); // stmp_no
+
+            System.out.println(" ObjCallStoreCreateData : " + bean.toString());
+
+            exec = callableStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return exec;
+    }
+
+    private int callOracleStored_thaiMedicineMom(String packageName, String tableName, ObjCallStoreCreateData bean) {
+        StringBuilder storeProce = null;
+        CallableStatement callableStatement = null;
+        int exec = 0;
+        try {
+
+            storeProce = new StringBuilder();
+            storeProce.append("{call opbkkclaim.").append(packageName).append(".").append(tableName);
+
+            storeProce.append(" (?,?,?,?,?,?,?,?)}");
+
+            System.out.println("sqlStoreProcedure: " + storeProce);
+
+            callableStatement = conn.prepareCall(storeProce.toString());
+            //callableStatement.setString(1, "RPT_OPBKK_TABLE");
+
+            /*
+             (p_date_opd_begin VARCHAR2,
+             p_date_opd_end VARCHAR2,
+             p_datesend_begin VARCHAR2,
+             p_datesend_end VARCHAR2,
+             p_stma_list VARCHAR2,
+             p_stmp VARCHAR2,
+             p_stmp_round VARCHAR2,
+             p_stmp_no varchar2
+             */
+            callableStatement.setString(1, bean.getOpd_date_start()); // opd_date_start
+            callableStatement.setString(2, bean.getOpd_date_stop());// opd_date_stop
+            callableStatement.setString(3, bean.getOpd_send_start()); // opd_send_start
+            callableStatement.setString(4, bean.getOpd_send_stop()); // // opd_send_stop
+            callableStatement.setString(5, null); // stmplist
+            callableStatement.setString(6, bean.getStmp().substring(0, 6)); // stmp
+            callableStatement.setString(7, bean.getStmp_round()); // stmp_round
+            callableStatement.setString(8, bean.getStmp_no()); // stmp_no
+
+            System.out.println(" ObjCallStoreCreateData : " + bean.toString());
+
+            exec = callableStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return exec;
+    }
+
+    private int callOracleStored_clearing(String packageName, String tableName, ObjCallStoreCreateData bean) {
+        StringBuilder storeProce = null;
+        CallableStatement callableStatement = null;
+        int exec = 0;
+        try {
+            storeProce = new StringBuilder();
+            storeProce.append("{call opbkkclaim.").append(packageName).append(".").append(tableName);
+
+            storeProce.append(" (?,?,?,?,?,?,?,?)}");
+
+            System.out.println("sqlStoreProcedure: " + storeProce);
+
+            callableStatement = conn.prepareCall(storeProce.toString());
+
+            /**/
+//            VTABLE_TYPE := /*'REPORT_TABLE'*/'PAYMENT_TABLE';
+//            VDATE_OPD_BEGIN := '20131001';
+//            VDATE_OPD_END := '20131231';
+//            VDATESEND_BEGIN := null;
+//            VDATESEND_END := '20140131';
+//            VSTMA_LIST := NULL;
+//            VSTMP := '201403';
+//            VSTMP_ROUND := 1;
+            /* */
+            //callableStatement.setString(1, "RPT_OPBKK_TABLE");
+            callableStatement.setString(1, bean.getOpd_date_start()); // opd_date_start
+            callableStatement.setString(2, bean.getOpd_date_stop());// opd_date_stop
+            callableStatement.setString(3, bean.getOpd_send_start()); // opd_send_start
+            callableStatement.setString(4, bean.getOpd_send_stop()); // // opd_send_stop
+            callableStatement.setString(5, null); // stmplist
+            callableStatement.setString(6, bean.getStmp().substring(0, 6)); // stmp
+            callableStatement.setString(7, bean.getStmp_round()); // stmp_round
+            callableStatement.setString(8, bean.getStmp_no()); // stmp_no
+
+            System.out.println("ObjCallStoreCreateData : " + bean.toString());
+            Console.LOG("ค่าที่ส่ง ประมวลผล ::==" + bean.toString(), 1);
+            exec = callableStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return exec;
+    }
+
+    private int callOracleStored_Chula16(String packageName, String tableName, ObjCallStoreCreateData bean) {
+        StringBuilder storeProce = null;
+        CallableStatement callableStatement = null;
+        int exec = 0;
+        try {
+            /*
+             * เนื่องจาก ระบบ การประมวลผลของปีงบไม่เหมือนกัน
+             * จึงแยก package ในการ ประมวลผล
+             */
+            storeProce = new StringBuilder();
+            storeProce.append("{call opbkkclaim.").append(packageName).append(".").append(tableName);
+
+            storeProce.append(" (?,?,?,?,?,?,?,?)}");
+
+            callableStatement = conn.prepareCall(storeProce.toString());
+
+            callableStatement.setString(1, bean.getOpd_date_start()); // opd_date_start
+            callableStatement.setString(2, bean.getOpd_date_stop());// opd_date_stop
+            callableStatement.setString(3, bean.getOpd_send_start()); // opd_send_start
+            callableStatement.setString(4, bean.getOpd_send_stop()); // // opd_send_stop
+            callableStatement.setString(5, null); // stmplist
+            callableStatement.setString(6, bean.getStmp().substring(0, 6)); // stmp
+            callableStatement.setString(7, bean.getStmp_round()); // stmp_round
+            callableStatement.setString(8, bean.getStmp_no()); // stmp_no
+
+            System.out.println("storeProce : " + storeProce);
+            System.out.println("ObjCallStoreCreateData : " + bean.toString());
+            exec = callableStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG(e.getMessage(), 0);
+        }
+        return exec;
+    }
+
+    private int callOracleStored_individual(String packageName, String tableName, ObjCallStoreCreateData bean) {
+        StringBuilder storeProce = null;
+        CallableStatement callableStatement = null;
+        int exec = 0;
+        try {
+            storeProce = new StringBuilder();
+            //storeProce.append("{call opbkkclaim.pkg_rpt_opbkk.").append(table);
+            storeProce.append("{call opbkkclaim.").append(packageName).append(".").append(tableName);
+
+            storeProce.append(" (?,?,?,?,?,?,?,?,?)}");
+
+            callableStatement = conn.prepareCall(storeProce.toString());
+
+            callableStatement.setString(1, bean.getOpd_date_start()); // opd_date_start
+            callableStatement.setString(2, bean.getOpd_date_stop());// opd_date_stop
+            callableStatement.setString(3, bean.getOpd_send_start()); // opd_send_start
+            callableStatement.setString(4, bean.getOpd_send_stop()); // // opd_send_stop
+            callableStatement.setString(5, null); // stmplist
+            callableStatement.setString(6, bean.getStmp().substring(0, 6)); // stmp
+            callableStatement.setString(7, bean.getStmp_round()); // stmp_round
+            callableStatement.setString(8, bean.getStmp_no()); // stmp_no
+            callableStatement.setString(9, bean.getIndv_late()); // p_INDV_LATE
+
+            // print 
+            System.out.println("storeProce : " + storeProce.toString());
+
+            System.out.println(" individual param ::==" + bean.toString());
+            exec = callableStatement.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return exec;
+    }
+
+    public boolean checkStmpDupicate(int tableKey, String wordStmp) {
+        boolean status = false;
+        StringBuilder sql = null;
+        ResultSet rs = null;
+        PreparedStatement pstmt = null;
+        try {
+            sql = new StringBuilder();
+            switch (tableKey) {
+                case 1:
+                    sql.append("SELECT COUNT(*) FROM RPT_OPBKK_TYPE6 WHERE stmp = ?");
+                    break;
+                case 2:
+                    sql.append("SELECT COUNT(*) FROM RPT_OPBKK_OPAE74 WHERE stmp = ?");
+                    break;
+                case 3:
+                    sql.append("SELECT COUNT(*) FROM RPT_OPBKK_TYPE5 WHERE stmp = ?");
+                    break;
+                case 4:
+                    sql.append("SELECT COUNT(*) FROM RPT_OPBKK_INDV WHERE stmp = ?");
+                    break;
+                case 5:
+                    sql.append("SELECT COUNT(*) FROM RPT_OPBKK_OPREFER WHERE stmp = ?");
+                    break;
+                case 6:
+                    sql.append("SELECT COUNT(*) FROM RPT_OPBKK_HC16CHULA WHERE stmp = ?");
+                    break;
+                case 7: // Noni
+                    sql.append("SELECT COUNT(*) FROM RPT_OPBKK_NONI WHERE stmp = ?");
+                    break;
+                case 8: // Thaimedicine Act
+                    sql.append("SELECT COUNT(*) FROM RPT_OPBKK_TMD_ACT WHERE stmp = ?");
+                    break;
+                case 9: // Thaimedicine Mom
+                    sql.append("SELECT COUNT(*) FROM RPT_OPBKK_TMD_MOM WHERE stmp = ?");
+                    break;
+                default:
+
+                    break;
+            }
+
+            System.out.println("wordStmp :" + wordStmp);
+            System.out.println("sql :" + sql.toString());
+
+            pstmt = conn.prepareStatement(sql.toString());
+            pstmt.setString(1, wordStmp);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                int countRecord = rs.getInt(1);
+                if (countRecord > 0) { // ค่าซ้ำ
+                    status = true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Console.LOG("การตรวจสอบ stmp ที่ออกเกิดข้อผิดพลาด: " + e.getMessage(), 0);
+        }
+        return status;
+    }
+
+    public String getLogReportLastRecord(int keyReport) {
+        StringBuilder sql = null;
+        StringBuilder resutl = new StringBuilder();
+        ResultSet rs = null;
+        PreparedStatement pstm = null;
+        try {
+            System.out.println("keyReport: " + keyReport);
+
+            String[] report = BaseFunction.LOG_TABLE_NAME;
+            sql = new StringBuilder();
+            sql.append(" SELECT TO_CHAR(LOGDATE, 'YYYY-MM-DD HH:mm:ss') as dateTime,");
+            sql.append(" RPT_NAME,STMP,N_RECORD,RESULT,DESCRIPTION ");
+            sql.append(" FROM LOG_REPORT ");
+            sql.append(" WHERE 1=1 ");
+            //sql.append(" AND RPT_NAME = '").append(report[keyReport]).append("' ");
+            sql.append(" AND LOGDATE = (select MAX(LOGDATE) from LOG_REPORT)");
+
+            System.out.println("sqlLog: " + sql);
+
+            pstm = conn.prepareStatement(sql.toString());
+            rs = pstm.executeQuery();
+            while (rs.next()) {
+                resutl.append(" เวลา: " + rs.getString("dateTime"));
+//                sb.append(rs.getString("RPT_NAME"));
+//                sb.append(rs.getString("STMP"));
+//                sb.append(rs.getString("N_RECORD"));
+                resutl.append(" จำนวนข้อมูล: " + rs.getString("N_RECORD"));
+                resutl.append(" ผล: " + rs.getString("RESULT"));
+                resutl.append(" สาเหตุ: " + rs.getString("DESCRIPTION"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+
+        }
+        return resutl.toString();
+    }
+
+    private int callIndvProcedureCheckDup(String stmp) {
+        PreparedStatement pstm = null;
+        int execute = 0;
+        try {
+            String sql = " BEGIN OPBKKCHECKER.CHECK_INV_REPORT(?); END;";
+            pstm = conn.prepareStatement(sql);
+            pstm.setString(1, stmp);
+            execute = pstm.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return execute;
+    }
+}

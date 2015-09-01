@@ -1,0 +1,181 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.dao;
+
+import com.claim.object.HospitalService;
+import com.claim.object.Obj_thaimedicine_act;
+import com.claim.object.Obj_thaimedicine_mom;
+import com.claim.object.OppReport;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author Poolsawat
+ */
+public class ThaiMedicineDao {
+
+    // ######### JDBC #########
+    Connection connection = null;
+    PreparedStatement pstm = null;
+    ResultSet rs = null;
+    StringBuilder sql = null;
+    int exec = 0;
+    // ######### JDBC #########
+
+    public void setConnection(Connection conn) {
+        this.connection = conn;
+    }
+
+    public List<HospitalService> getHospitalService(OppReport report) {
+        List<HospitalService> listData = null;
+        HospitalService data = null;
+        try {
+            sql = new StringBuilder();
+            sql.append(" SELECT DISTINCT(HCODE) as HCODE,HCODENAME FROM RPT_OPBKK_TMD_ACT");
+            sql.append(" ORDER BY HCODE");
+            
+            pstm = connection.prepareStatement(sql.toString());
+            rs = pstm.executeQuery();
+            listData = new ArrayList<HospitalService>();
+            while (rs.next()) {        
+                data = new HospitalService();
+                data.setHosCode(rs.getString("HCODE"));
+                data.setHosName(rs.getString("HCODENAME"));
+                listData.add(data);
+            }
+            /*
+             SQL Stagement
+             */
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstm != null) {
+                    pstm.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return listData;
+    }
+
+    public List<Obj_thaimedicine_act> getListTmdAct() {
+        List<Obj_thaimedicine_act> listData = null;
+        Obj_thaimedicine_act data = null;
+        try {
+            sql = new StringBuilder();
+
+            pstm = connection.prepareStatement(sql.toString());
+            rs = pstm.executeQuery();
+            listData = new ArrayList<Obj_thaimedicine_act>();
+            while (rs.next()) {
+                data = new Obj_thaimedicine_act();
+                data.setAge_year(rs.getInt("age_year"));
+                data.setDateopd(rs.getString("dateopd"));
+                data.setHcode(rs.getString("hcode"));
+                data.setHcodename(rs.getString("hcodename"));
+                data.setHmain(rs.getString("hmain"));
+                data.setHmainname(rs.getString("hmainname"));
+                data.setHn(rs.getString("hn"));
+                data.setItem_code(rs.getString("item_code"));
+                data.setItem_desc(rs.getString("item_desc"));
+                data.setItem_type(rs.getString("item_type"));
+                data.setPid(rs.getString("pid"));
+                data.setPname(rs.getString("pname"));
+                data.setPoint(rs.getInt("point"));
+                data.setQty(rs.getInt("qty"));
+                data.setRatepay(rs.getInt("ratepay"));
+                data.setRemark(rs.getString("remark"));
+                data.setRpt_date(rs.getString("rpt_date"));
+                data.setSex(rs.getInt("sex"));
+                //data.setSex_name(rs.getString(""));
+                data.setStmp(rs.getString("stmp"));
+                data.setTotalchrg(rs.getDouble("totalchrg"));
+                data.setTotalpay(rs.getDouble("totalpay"));
+                data.setTxid(rs.getString("txid"));
+                data.setUnitprice(rs.getInt("unitprice"));
+                listData.add(data);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstm != null) {
+                    pstm.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return listData;
+    }
+
+    public List<Obj_thaimedicine_mom> getListTmdMom() {
+        List<Obj_thaimedicine_mom> listData = null;
+        Obj_thaimedicine_mom data = null;
+        try {
+            sql = new StringBuilder();
+
+            pstm = connection.prepareStatement(sql.toString());
+            rs = pstm.executeQuery();
+            listData = new ArrayList<Obj_thaimedicine_mom>();
+            while (rs.next()) {
+                data = new Obj_thaimedicine_mom();
+                data.setAge_year(rs.getInt("age_year"));
+                data.setDateopd(rs.getString("dateopd"));
+                data.setHcode(rs.getString("hcode"));
+                data.setHcodename(rs.getString("hcodename"));
+                data.setHmain(rs.getString("hmain"));
+                data.setHmainname(rs.getString("hmainname"));
+                data.setHn(rs.getString("hn"));
+                data.setItem_code(rs.getString("item_code"));
+                data.setItem_desc(rs.getString("item_desc"));
+                data.setItem_type(rs.getString("item_type"));
+                data.setPid(rs.getString("pid"));
+                data.setPname(rs.getString("pname"));
+                data.setPoint(rs.getDouble("point"));
+                data.setQty(rs.getInt("qty"));
+                data.setRatepay(rs.getInt("ratepay"));
+                data.setRemark(rs.getString("remark"));
+                data.setRpt_date(rs.getString("rpt_date"));
+                data.setSex(rs.getInt("sex"));
+                //data.setSex_name(rs.getString(""));
+                data.setStmp(rs.getString("stmp"));
+                data.setTotalchrg(rs.getDouble("totalchrg"));
+                data.setTotalpay(rs.getDouble("totalpay"));
+                data.setTxid(rs.getString("txid"));
+                data.setUnitprice(rs.getInt("unitprice"));
+                listData.add(data);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstm != null) {
+                    pstm.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return listData;
+    }
+}

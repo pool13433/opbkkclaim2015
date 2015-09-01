@@ -1,0 +1,123 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.dao;
+
+import com.claim.object.ObjPaymentResult;
+import com.claim.support.BaseFunction;
+import com.claim.support.Console;
+import com.claim.support.Constants;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author Poolsawat.a
+ */
+public class DropReportDAO {
+
+    Connection connection = null;
+    PreparedStatement pstm = null;
+    ResultSet rs = null;
+    StringBuilder sql = null;
+
+    public void setConnection(Connection conn) {
+        this.connection = conn;
+    }
+
+    public List<ObjPaymentResult> getListRptReportByTable(int indexTable) throws SQLException{
+        List<ObjPaymentResult> listData = null;
+        ObjPaymentResult objData = null;
+        try {
+            sql = new StringBuilder();
+            sql.append(" select decode (s.stmp, null, null, '20' || s.stmp || '-' || s.stmp_n) stmp,");
+            sql.append(" r.stmp stmp_report,");
+            sql.append(" decode (");
+            sql.append(" s.stmp,");
+            sql.append(" null, 'รอการแจ้งสถานะการจ่ายเงิน',");
+            sql.append(" 'แจ้งสถานะการจ่ายเงินแล้ว')");
+            sql.append(" status,");
+            sql.append(" count(r.txid) count_record");
+            sql.append(" from opbkk_service s");
+            sql.append(" join ").append(BaseFunction.TABLE_NAME[indexTable]).append(" r");
+            sql.append(" on s.txid = r.txid");
+            sql.append(" left join opbkk_stamp_payment st");
+            sql.append(" on (r.stmp = st.stmp and st.optype = '").append(BaseFunction.TABLE_ALIAS[indexTable]).append("') ");
+            sql.append(" where 1 = 1");
+            //sql.append(" and r.stmp is null");
+            sql.append(" AND DECODE (s.stmp, NULL, NULL, '20' || s.stmp || '-' || s.stmp_n) IS NULL");
+            sql.append(" group by decode (s.stmp, null, null, '20' || s.stmp || '-' || s.stmp_n),");
+            sql.append(" s.stmp,");
+            sql.append(" r.stmp");
+            sql.append(" order by decode (s.stmp, null, null, '20' || s.stmp || '-' || s.stmp_n),");
+            sql.append(" s.stmp,");
+            sql.append(" r.stmp");
+            
+            System.out.println("sql ::=="+sql.toString());
+            if (Constants.IS_SHOW_QUERY) {
+                Console.LOG(" QUERY ::==" + sql.toString(), 1);
+            }
+            
+            pstm = connection.prepareStatement(sql.toString());
+            rs = pstm.executeQuery();
+            listData = new ArrayList<>();
+            while (rs.next()) {
+                objData = new ObjPaymentResult();
+                objData.setStmp(rs.getString("stmp"));
+                objData.setStatus(rs.getString("status"));
+                objData.setStmp_report(rs.getString("stmp_report"));
+                objData.setTotal_case(rs.getInt("count_record"));
+                listData.add(objData);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstm != null) {
+                    pstm.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return listData;
+    }
+    
+    public int deleteRptReport(int indexTable,String stmp){
+        int exec = 0;
+        try {
+            sql = new StringBuilder();
+            sql.append(" DELETE FROM ").append(BaseFunction.TABLE_NAME[indexTable]);
+            sql.append(" WHERE stmp = ?");
+            
+            System.out.println("sql ::=="+sql.toString());
+            if (Constants.IS_SHOW_QUERY) {
+                Console.LOG(" STMP ::=="+stmp, exec);
+                Console.LOG(" QUERY ::==" + sql.toString(), 1);
+            }
+            pstm = connection.prepareStatement(sql.toString());
+            pstm.setString(1, stmp);
+            exec = pstm.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (pstm != null) {
+                    pstm.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return exec;
+    }
+}

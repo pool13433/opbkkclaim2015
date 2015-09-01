@@ -1,0 +1,38 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.support;
+
+/**
+ *
+ * @author Poolsawat
+ */
+public class CssStyle {
+
+    public static String BTN_PRIMARY = "-moz-box-shadow: 3px 4px 0px 0px #1564ad;\n" +
+"	-webkit-box-shadow: 3px 4px 0px 0px #1564ad;\n" +
+"	box-shadow: 3px 4px 0px 0px #1564ad;\n" +
+"	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #79bbff), color-stop(1, #378de5));\n" +
+"	background:-moz-linear-gradient(top, #79bbff 5%, #378de5 100%);\n" +
+"	background:-webkit-linear-gradient(top, #79bbff 5%, #378de5 100%);\n" +
+"	background:-o-linear-gradient(top, #79bbff 5%, #378de5 100%);\n" +
+"	background:-ms-linear-gradient(top, #79bbff 5%, #378de5 100%);\n" +
+"	background:linear-gradient(to bottom, #79bbff 5%, #378de5 100%);\n" +
+"	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#79bbff', endColorstr='#378de5',GradientType=0);\n" +
+"	background-color:#79bbff;\n" +
+"	-moz-border-radius:5px;\n" +
+"	-webkit-border-radius:5px;\n" +
+"	border-radius:5px;\n" +
+"	border:1px solid #337bc4;\n" +
+"	display:inline-block;\n" +
+"	cursor:pointer;\n" +
+"	color:#ffffff;\n" +
+"	font-family:Arial;\n" +
+"	font-size:17px;\n" +
+"	font-weight:bold;\n" +
+"	padding:12px 44px;\n" +
+"	text-decoration:none;\n" +
+"	text-shadow:0px 1px 0px #528ecc;";
+}

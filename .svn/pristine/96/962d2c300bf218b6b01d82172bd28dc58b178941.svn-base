@@ -1,0 +1,30 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.claim.controller;
+
+/**
+ *
+ * @author Poolsawat
+ */
+public class ThaiMedicineController {
+        public static String HEADER_DETAIL_ACT = "รายงานรายละเอียดกิจกรรมนวด ประคบสมุนไพร อบสมุนไพร และจ่ายยาสมุนไพร";
+        public static String HEADER_DETAIL_MOM = "รายงานรายละเอียดกิจกรรมบริการมารดาหลังคลอด";
+        public static String HEADER_SUM_ACT = "รายงานสรุปกิจกรรมนวด ประคบสมุนไพร อบสมุนไพร และจ่ายยาสมุนไพร";
+        public static String HEADER_SUM_MOM = "รายงานสรุปกิจกรรมบริการมารดาหลังคลอด";
+        
+        public void tmdActDetail(){
+            
+        }
+        public void tmdMomDetail(){
+        
+        }
+        public void tmdActSummary(){
+        
+        }
+        public void tmdMomSummary(){
+        
+        }
+}
